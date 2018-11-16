@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenRun Id="root_cluster_synth_1" LaunchPart="xc7a100tcsg324-1" LaunchTime="1542355426">
+  <File Type="RDS-PROPCONSTRS" Name="root_cluster_drc_synth.rpt"/>
+  <File Type="PA-TCL" Name="root_cluster.tcl"/>
+  <File Type="RDS-RDS" Name="root_cluster.vds"/>
+  <File Type="RDS-UTIL" Name="root_cluster_utilization_synth.rpt"/>
+  <File Type="RDS-UTIL-PB" Name="root_cluster_utilization_synth.pb"/>
+  <File Type="RDS-DCP" Name="root_cluster.dcp"/>
+  <File Type="VDS-TIMINGSUMMARY" Name="root_cluster_timing_summary_synth.rpt"/>
+  <File Type="VDS-TIMING-PB" Name="root_cluster_timing_summary_synth.pb"/>
+  <FileSet Name="sources" Type="BlockSrcs" RelSrcDir="$PSRCDIR/root_cluster">
+    <File Path="$PSRCDIR/sources_1/ip/root_cluster/root_cluster.xci">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <Config>
+      <Option Name="TopModule" Val="root_cluster"/>
+      <Option Name="UseBlackboxStub" Val="1"/>
+    </Config>
+  </FileSet>
+  <FileSet Name="constrs_in" Type="BlockSrcs" RelSrcDir="$PSRCDIR/root_cluster">
+    <File Path="$PSRCDIR/sources_1/ip/root_cluster/root_cluster.xci">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <Config>
+      <Option Name="TopModule" Val="root_cluster"/>
+      <Option Name="UseBlackboxStub" Val="1"/>
+    </Config>
+  </FileSet>
+  <Strategy Version="1" Minor="2">
+    <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2016">
+      <Desc>Vivado Synthesis Defaults</Desc>
+    </StratHandle>
+    <Step Id="synth_design"/>
+  </Strategy>
+</GenRun>

@@ -1,0 +1,714 @@
+Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.
+-------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version     : Vivado v.2016.2 (win64) Build 1577090 Thu Jun  2 16:32:40 MDT 2016
+| Date             : Fri Nov 16 20:22:47 2018
+| Host             : SHUN-LAPTOP running 64-bit major release  (build 9200)
+| Command          : report_power -file topmodule_power_routed.rpt -pb topmodule_power_summary_routed.pb -rpx topmodule_power_routed.rpx
+| Design           : topmodule
+| Device           : xc7a100tcsg324-1
+| Design State     : routed
+| Grade            : commercial
+| Process          : typical
+| Characterization : Production
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+Power Report
+
+Table of Contents
+-----------------
+1. Summary
+1.1 On-Chip Components
+1.2 Power Supply Summary
+1.3 Confidence Level
+2. Settings
+2.1 Environment
+2.2 Clock Constraints
+3. Detailed Reports
+3.1 By Hierarchy
+
+1. Summary
+----------
+
++--------------------------+-------+
+| Total On-Chip Power (W)  | 0.271 |
+| Dynamic (W)              | 0.173 |
+| Device Static (W)        | 0.098 |
+| Effective TJA (C/W)      | 4.6   |
+| Max Ambient (C)          | 83.8  |
+| Junction Temperature (C) | 26.2  |
+| Confidence Level         | Low   |
+| Setting File             | ---   |
+| Simulation Activity File | ---   |
+| Design Nets Matched      | NA    |
++--------------------------+-------+
+
+
+1.1 On-Chip Components
+----------------------
+
++--------------------------+-----------+----------+-----------+-----------------+
+| On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
++--------------------------+-----------+----------+-----------+-----------------+
+| Clocks                   |     0.004 |        6 |       --- |             --- |
+| Slice Logic              |     0.007 |    18427 |       --- |             --- |
+|   LUT as Logic           |     0.005 |     8768 |     63400 |           13.83 |
+|   CARRY4                 |     0.001 |      876 |     15850 |            5.53 |
+|   LUT as Distributed RAM |    <0.001 |     1792 |     19000 |            9.43 |
+|   Register               |    <0.001 |     4697 |    126800 |            3.70 |
+|   F7/F8 Muxes            |    <0.001 |     1235 |     63400 |            1.95 |
+|   Others                 |     0.000 |       68 |       --- |             --- |
+| Signals                  |     0.011 |    14507 |       --- |             --- |
+| Block RAM                |     0.002 |        9 |       135 |            6.67 |
+| MMCM                     |     0.131 |        1 |         6 |           16.67 |
+| DSPs                     |    <0.001 |       12 |       240 |            5.00 |
+| I/O                      |     0.018 |       74 |       210 |           35.24 |
+| Static Power             |     0.098 |          |           |                 |
+| Total                    |     0.271 |          |           |                 |
++--------------------------+-----------+----------+-----------+-----------------+
+
+
+1.2 Power Supply Summary
+------------------------
+
++-----------+-------------+-----------+-------------+------------+
+| Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) |
++-----------+-------------+-----------+-------------+------------+
+| Vccint    |       1.000 |     0.040 |       0.024 |      0.016 |
+| Vccaux    |       1.800 |     0.091 |       0.073 |      0.018 |
+| Vcco33    |       3.300 |     0.009 |       0.005 |      0.004 |
+| Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |
+| Vcco18    |       1.800 |     0.000 |       0.000 |      0.000 |
+| Vcco15    |       1.500 |     0.000 |       0.000 |      0.000 |
+| Vcco135   |       1.350 |     0.000 |       0.000 |      0.000 |
+| Vcco12    |       1.200 |     0.000 |       0.000 |      0.000 |
+| Vccaux_io |       1.800 |     0.000 |       0.000 |      0.000 |
+| Vccbram   |       1.000 |     0.001 |       0.000 |      0.000 |
+| MGTAVcc   |       1.000 |     0.000 |       0.000 |      0.000 |
+| MGTAVtt   |       1.200 |     0.000 |       0.000 |      0.000 |
+| Vccadc    |       1.800 |     0.020 |       0.000 |      0.020 |
++-----------+-------------+-----------+-------------+------------+
+
+
+1.3 Confidence Level
+--------------------
+
++-----------------------------+------------+--------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+| User Input Data             | Confidence | Details                                                | Action                                                                                                     |
++-----------------------------+------------+--------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+| Design implementation state | High       | Design is routed                                       |                                                                                                            |
+| Clock nodes activity        | High       | User specified more than 95% of clocks                 |                                                                                                            |
+| I/O nodes activity          | Low        | More than 75% of inputs are missing user specification | Provide missing input activity with simulation results or by editing the "By Resource Type -> I/Os" view   |
+| Internal nodes activity     | Medium     | User specified less than 25% of internal nodes         | Provide missing internal nodes activity with simulation results or by editing the "By Resource Type" views |
+| Device models               | High       | Device models are Production                           |                                                                                                            |
+|                             |            |                                                        |                                                                                                            |
+| Overall confidence level    | Low        |                                                        |                                                                                                            |
++-----------------------------+------------+--------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+
+
+2. Settings
+-----------
+
+2.1 Environment
+---------------
+
++-----------------------+--------------------------+
+| Ambient Temp (C)      | 25.0                     |
+| ThetaJA (C/W)         | 4.6                      |
+| Airflow (LFM)         | 250                      |
+| Heat Sink             | medium (Medium Profile)  |
+| ThetaSA (C/W)         | 4.6                      |
+| Board Selection       | medium (10"x10")         |
+| # of Board Layers     | 12to15 (12 to 15 Layers) |
+| Board Temperature (C) | 25.0                     |
++-----------------------+--------------------------+
+
+
+2.2 Clock Constraints
+---------------------
+
++------------------------------------------+------------------------------------------------------+-----------------+
+| Clock                                    | Domain                                               | Constraint (ns) |
++------------------------------------------+------------------------------------------------------+-----------------+
+| clk_cpu_clk_generator                    | computer_uut/clkgen_inst/inst/clk_cpu_clk_generator  |            66.7 |
+| clk_vga_clk_generator                    | computer_uut/clkgen_inst/inst/clk_vga_clk_generator  |            20.8 |
+| clkfbout_clk_generator                   | computer_uut/clkgen_inst/inst/clkfbout_clk_generator |            10.0 |
+| computer_uut/clkgen_inst/inst/clk_100MHz | CLK100MHZ_IBUF                                       |            10.0 |
++------------------------------------------+------------------------------------------------------+-----------------+
+
+
+3. Detailed Reports
+-------------------
+
+3.1 By Hierarchy
+----------------
+
++--------------------------------------------------+-----------+
+| Name                                             | Power (W) |
++--------------------------------------------------+-----------+
+| topmodule                                        |     0.173 |
+|   computer_uut                                   |     0.150 |
+|     bootloader_inst                              |     0.003 |
+|       fileFATSector_reg_r1_0_63_0_2              |    <0.001 |
+|       fileFATSector_reg_r1_0_63_3_5              |    <0.001 |
+|       fileFATSector_reg_r1_0_63_6_6              |    <0.001 |
+|       fileFATSector_reg_r1_0_63_7_7              |    <0.001 |
+|       fileFATSector_reg_r1_128_191_0_2           |    <0.001 |
+|       fileFATSector_reg_r1_128_191_3_5           |    <0.001 |
+|       fileFATSector_reg_r1_128_191_6_6           |    <0.001 |
+|       fileFATSector_reg_r1_128_191_7_7           |    <0.001 |
+|       fileFATSector_reg_r1_192_255_0_2           |    <0.001 |
+|       fileFATSector_reg_r1_192_255_3_5           |    <0.001 |
+|       fileFATSector_reg_r1_192_255_6_6           |    <0.001 |
+|       fileFATSector_reg_r1_192_255_7_7           |    <0.001 |
+|       fileFATSector_reg_r1_256_319_0_2           |    <0.001 |
+|       fileFATSector_reg_r1_256_319_3_5           |    <0.001 |
+|       fileFATSector_reg_r1_256_319_6_6           |    <0.001 |
+|       fileFATSector_reg_r1_256_319_7_7           |    <0.001 |
+|       fileFATSector_reg_r1_320_383_0_2           |    <0.001 |
+|       fileFATSector_reg_r1_320_383_3_5           |    <0.001 |
+|       fileFATSector_reg_r1_320_383_6_6           |    <0.001 |
+|       fileFATSector_reg_r1_320_383_7_7           |    <0.001 |
+|       fileFATSector_reg_r1_384_447_0_2           |    <0.001 |
+|       fileFATSector_reg_r1_384_447_3_5           |    <0.001 |
+|       fileFATSector_reg_r1_384_447_6_6           |    <0.001 |
+|       fileFATSector_reg_r1_384_447_7_7           |    <0.001 |
+|       fileFATSector_reg_r1_448_511_0_2           |    <0.001 |
+|       fileFATSector_reg_r1_448_511_3_5           |    <0.001 |
+|       fileFATSector_reg_r1_448_511_6_6           |    <0.001 |
+|       fileFATSector_reg_r1_448_511_7_7           |    <0.001 |
+|       fileFATSector_reg_r1_64_127_0_2            |    <0.001 |
+|       fileFATSector_reg_r1_64_127_3_5            |    <0.001 |
+|       fileFATSector_reg_r1_64_127_6_6            |    <0.001 |
+|       fileFATSector_reg_r1_64_127_7_7            |    <0.001 |
+|       fileFATSector_reg_r2_0_63_0_2              |    <0.001 |
+|       fileFATSector_reg_r2_0_63_3_5              |    <0.001 |
+|       fileFATSector_reg_r2_0_63_6_6              |    <0.001 |
+|       fileFATSector_reg_r2_0_63_7_7              |    <0.001 |
+|       fileFATSector_reg_r2_128_191_0_2           |    <0.001 |
+|       fileFATSector_reg_r2_128_191_3_5           |    <0.001 |
+|       fileFATSector_reg_r2_128_191_6_6           |    <0.001 |
+|       fileFATSector_reg_r2_128_191_7_7           |    <0.001 |
+|       fileFATSector_reg_r2_192_255_0_2           |    <0.001 |
+|       fileFATSector_reg_r2_192_255_3_5           |    <0.001 |
+|       fileFATSector_reg_r2_192_255_6_6           |    <0.001 |
+|       fileFATSector_reg_r2_192_255_7_7           |    <0.001 |
+|       fileFATSector_reg_r2_256_319_0_2           |    <0.001 |
+|       fileFATSector_reg_r2_256_319_3_5           |    <0.001 |
+|       fileFATSector_reg_r2_256_319_6_6           |    <0.001 |
+|       fileFATSector_reg_r2_256_319_7_7           |    <0.001 |
+|       fileFATSector_reg_r2_320_383_0_2           |    <0.001 |
+|       fileFATSector_reg_r2_320_383_3_5           |    <0.001 |
+|       fileFATSector_reg_r2_320_383_6_6           |    <0.001 |
+|       fileFATSector_reg_r2_320_383_7_7           |    <0.001 |
+|       fileFATSector_reg_r2_384_447_0_2           |    <0.001 |
+|       fileFATSector_reg_r2_384_447_3_5           |    <0.001 |
+|       fileFATSector_reg_r2_384_447_6_6           |    <0.001 |
+|       fileFATSector_reg_r2_384_447_7_7           |    <0.001 |
+|       fileFATSector_reg_r2_448_511_0_2           |    <0.001 |
+|       fileFATSector_reg_r2_448_511_3_5           |    <0.001 |
+|       fileFATSector_reg_r2_448_511_6_6           |    <0.001 |
+|       fileFATSector_reg_r2_448_511_7_7           |    <0.001 |
+|       fileFATSector_reg_r2_64_127_0_2            |    <0.001 |
+|       fileFATSector_reg_r2_64_127_3_5            |    <0.001 |
+|       fileFATSector_reg_r2_64_127_6_6            |    <0.001 |
+|       fileFATSector_reg_r2_64_127_7_7            |    <0.001 |
+|       fileFATSector_reg_r3_0_63_0_2              |    <0.001 |
+|       fileFATSector_reg_r3_0_63_3_5              |    <0.001 |
+|       fileFATSector_reg_r3_0_63_6_6              |    <0.001 |
+|       fileFATSector_reg_r3_0_63_7_7              |    <0.001 |
+|       fileFATSector_reg_r3_128_191_0_2           |    <0.001 |
+|       fileFATSector_reg_r3_128_191_3_5           |    <0.001 |
+|       fileFATSector_reg_r3_128_191_6_6           |    <0.001 |
+|       fileFATSector_reg_r3_128_191_7_7           |    <0.001 |
+|       fileFATSector_reg_r3_192_255_0_2           |    <0.001 |
+|       fileFATSector_reg_r3_192_255_3_5           |    <0.001 |
+|       fileFATSector_reg_r3_192_255_6_6           |    <0.001 |
+|       fileFATSector_reg_r3_192_255_7_7           |    <0.001 |
+|       fileFATSector_reg_r3_256_319_0_2           |    <0.001 |
+|       fileFATSector_reg_r3_256_319_3_5           |    <0.001 |
+|       fileFATSector_reg_r3_256_319_6_6           |    <0.001 |
+|       fileFATSector_reg_r3_256_319_7_7           |    <0.001 |
+|       fileFATSector_reg_r3_320_383_0_2           |    <0.001 |
+|       fileFATSector_reg_r3_320_383_3_5           |    <0.001 |
+|       fileFATSector_reg_r3_320_383_6_6           |    <0.001 |
+|       fileFATSector_reg_r3_320_383_7_7           |    <0.001 |
+|       fileFATSector_reg_r3_384_447_0_2           |    <0.001 |
+|       fileFATSector_reg_r3_384_447_3_5           |    <0.001 |
+|       fileFATSector_reg_r3_384_447_6_6           |    <0.001 |
+|       fileFATSector_reg_r3_384_447_7_7           |    <0.001 |
+|       fileFATSector_reg_r3_448_511_0_2           |    <0.001 |
+|       fileFATSector_reg_r3_448_511_3_5           |    <0.001 |
+|       fileFATSector_reg_r3_448_511_6_6           |    <0.001 |
+|       fileFATSector_reg_r3_448_511_7_7           |    <0.001 |
+|       fileFATSector_reg_r3_64_127_0_2            |    <0.001 |
+|       fileFATSector_reg_r3_64_127_3_5            |    <0.001 |
+|       fileFATSector_reg_r3_64_127_6_6            |    <0.001 |
+|       fileFATSector_reg_r3_64_127_7_7            |    <0.001 |
+|       fileFATSector_reg_r4_0_63_0_2              |    <0.001 |
+|       fileFATSector_reg_r4_0_63_3_5              |    <0.001 |
+|       fileFATSector_reg_r4_0_63_6_6              |    <0.001 |
+|       fileFATSector_reg_r4_0_63_7_7              |    <0.001 |
+|       fileFATSector_reg_r4_128_191_0_2           |    <0.001 |
+|       fileFATSector_reg_r4_128_191_3_5           |    <0.001 |
+|       fileFATSector_reg_r4_128_191_6_6           |    <0.001 |
+|       fileFATSector_reg_r4_128_191_7_7           |    <0.001 |
+|       fileFATSector_reg_r4_192_255_0_2           |    <0.001 |
+|       fileFATSector_reg_r4_192_255_3_5           |    <0.001 |
+|       fileFATSector_reg_r4_192_255_6_6           |    <0.001 |
+|       fileFATSector_reg_r4_192_255_7_7           |    <0.001 |
+|       fileFATSector_reg_r4_256_319_0_2           |    <0.001 |
+|       fileFATSector_reg_r4_256_319_3_5           |    <0.001 |
+|       fileFATSector_reg_r4_256_319_6_6           |    <0.001 |
+|       fileFATSector_reg_r4_256_319_7_7           |    <0.001 |
+|       fileFATSector_reg_r4_320_383_0_2           |    <0.001 |
+|       fileFATSector_reg_r4_320_383_3_5           |    <0.001 |
+|       fileFATSector_reg_r4_320_383_6_6           |    <0.001 |
+|       fileFATSector_reg_r4_320_383_7_7           |    <0.001 |
+|       fileFATSector_reg_r4_384_447_0_2           |    <0.001 |
+|       fileFATSector_reg_r4_384_447_3_5           |    <0.001 |
+|       fileFATSector_reg_r4_384_447_6_6           |    <0.001 |
+|       fileFATSector_reg_r4_384_447_7_7           |    <0.001 |
+|       fileFATSector_reg_r4_448_511_0_2           |    <0.001 |
+|       fileFATSector_reg_r4_448_511_3_5           |    <0.001 |
+|       fileFATSector_reg_r4_448_511_6_6           |    <0.001 |
+|       fileFATSector_reg_r4_448_511_7_7           |    <0.001 |
+|       fileFATSector_reg_r4_64_127_0_2            |    <0.001 |
+|       fileFATSector_reg_r4_64_127_3_5            |    <0.001 |
+|       fileFATSector_reg_r4_64_127_6_6            |    <0.001 |
+|       fileFATSector_reg_r4_64_127_7_7            |    <0.001 |
+|       rootFATSector_reg_r1_0_63_0_2              |    <0.001 |
+|       rootFATSector_reg_r1_0_63_3_5              |    <0.001 |
+|       rootFATSector_reg_r1_0_63_6_6              |    <0.001 |
+|       rootFATSector_reg_r1_0_63_7_7              |    <0.001 |
+|       rootFATSector_reg_r1_128_191_0_2           |    <0.001 |
+|       rootFATSector_reg_r1_128_191_3_5           |    <0.001 |
+|       rootFATSector_reg_r1_128_191_6_6           |    <0.001 |
+|       rootFATSector_reg_r1_128_191_7_7           |    <0.001 |
+|       rootFATSector_reg_r1_192_255_0_2           |    <0.001 |
+|       rootFATSector_reg_r1_192_255_3_5           |    <0.001 |
+|       rootFATSector_reg_r1_192_255_6_6           |    <0.001 |
+|       rootFATSector_reg_r1_192_255_7_7           |    <0.001 |
+|       rootFATSector_reg_r1_256_319_0_2           |    <0.001 |
+|       rootFATSector_reg_r1_256_319_3_5           |    <0.001 |
+|       rootFATSector_reg_r1_256_319_6_6           |    <0.001 |
+|       rootFATSector_reg_r1_256_319_7_7           |    <0.001 |
+|       rootFATSector_reg_r1_320_383_0_2           |    <0.001 |
+|       rootFATSector_reg_r1_320_383_3_5           |    <0.001 |
+|       rootFATSector_reg_r1_320_383_6_6           |    <0.001 |
+|       rootFATSector_reg_r1_320_383_7_7           |    <0.001 |
+|       rootFATSector_reg_r1_384_447_0_2           |    <0.001 |
+|       rootFATSector_reg_r1_384_447_3_5           |    <0.001 |
+|       rootFATSector_reg_r1_384_447_6_6           |    <0.001 |
+|       rootFATSector_reg_r1_384_447_7_7           |    <0.001 |
+|       rootFATSector_reg_r1_448_511_0_2           |    <0.001 |
+|       rootFATSector_reg_r1_448_511_3_5           |    <0.001 |
+|       rootFATSector_reg_r1_448_511_6_6           |    <0.001 |
+|       rootFATSector_reg_r1_448_511_7_7           |    <0.001 |
+|       rootFATSector_reg_r1_64_127_0_2            |    <0.001 |
+|       rootFATSector_reg_r1_64_127_3_5            |    <0.001 |
+|       rootFATSector_reg_r1_64_127_6_6            |    <0.001 |
+|       rootFATSector_reg_r1_64_127_7_7            |    <0.001 |
+|       rootFATSector_reg_r2_0_63_0_2              |    <0.001 |
+|       rootFATSector_reg_r2_0_63_3_5              |    <0.001 |
+|       rootFATSector_reg_r2_0_63_6_6              |    <0.001 |
+|       rootFATSector_reg_r2_0_63_7_7              |    <0.001 |
+|       rootFATSector_reg_r2_128_191_0_2           |    <0.001 |
+|       rootFATSector_reg_r2_128_191_3_5           |    <0.001 |
+|       rootFATSector_reg_r2_128_191_6_6           |    <0.001 |
+|       rootFATSector_reg_r2_128_191_7_7           |    <0.001 |
+|       rootFATSector_reg_r2_192_255_0_2           |    <0.001 |
+|       rootFATSector_reg_r2_192_255_3_5           |    <0.001 |
+|       rootFATSector_reg_r2_192_255_6_6           |    <0.001 |
+|       rootFATSector_reg_r2_192_255_7_7           |    <0.001 |
+|       rootFATSector_reg_r2_256_319_0_2           |    <0.001 |
+|       rootFATSector_reg_r2_256_319_3_5           |    <0.001 |
+|       rootFATSector_reg_r2_256_319_6_6           |    <0.001 |
+|       rootFATSector_reg_r2_256_319_7_7           |    <0.001 |
+|       rootFATSector_reg_r2_320_383_0_2           |    <0.001 |
+|       rootFATSector_reg_r2_320_383_3_5           |    <0.001 |
+|       rootFATSector_reg_r2_320_383_6_6           |    <0.001 |
+|       rootFATSector_reg_r2_320_383_7_7           |    <0.001 |
+|       rootFATSector_reg_r2_384_447_0_2           |    <0.001 |
+|       rootFATSector_reg_r2_384_447_3_5           |    <0.001 |
+|       rootFATSector_reg_r2_384_447_6_6           |    <0.001 |
+|       rootFATSector_reg_r2_384_447_7_7           |    <0.001 |
+|       rootFATSector_reg_r2_448_511_0_2           |    <0.001 |
+|       rootFATSector_reg_r2_448_511_3_5           |    <0.001 |
+|       rootFATSector_reg_r2_448_511_6_6           |    <0.001 |
+|       rootFATSector_reg_r2_448_511_7_7           |    <0.001 |
+|       rootFATSector_reg_r2_64_127_0_2            |    <0.001 |
+|       rootFATSector_reg_r2_64_127_3_5            |    <0.001 |
+|       rootFATSector_reg_r2_64_127_6_6            |    <0.001 |
+|       rootFATSector_reg_r2_64_127_7_7            |    <0.001 |
+|       rootFATSector_reg_r3_0_63_0_2              |    <0.001 |
+|       rootFATSector_reg_r3_0_63_3_5              |    <0.001 |
+|       rootFATSector_reg_r3_0_63_6_6              |    <0.001 |
+|       rootFATSector_reg_r3_0_63_7_7              |    <0.001 |
+|       rootFATSector_reg_r3_128_191_0_2           |    <0.001 |
+|       rootFATSector_reg_r3_128_191_3_5           |    <0.001 |
+|       rootFATSector_reg_r3_128_191_6_6           |    <0.001 |
+|       rootFATSector_reg_r3_128_191_7_7           |    <0.001 |
+|       rootFATSector_reg_r3_192_255_0_2           |    <0.001 |
+|       rootFATSector_reg_r3_192_255_3_5           |    <0.001 |
+|       rootFATSector_reg_r3_192_255_6_6           |    <0.001 |
+|       rootFATSector_reg_r3_192_255_7_7           |    <0.001 |
+|       rootFATSector_reg_r3_256_319_0_2           |    <0.001 |
+|       rootFATSector_reg_r3_256_319_3_5           |    <0.001 |
+|       rootFATSector_reg_r3_256_319_6_6           |    <0.001 |
+|       rootFATSector_reg_r3_256_319_7_7           |    <0.001 |
+|       rootFATSector_reg_r3_320_383_0_2           |    <0.001 |
+|       rootFATSector_reg_r3_320_383_3_5           |    <0.001 |
+|       rootFATSector_reg_r3_320_383_6_6           |    <0.001 |
+|       rootFATSector_reg_r3_320_383_7_7           |    <0.001 |
+|       rootFATSector_reg_r3_384_447_0_2           |    <0.001 |
+|       rootFATSector_reg_r3_384_447_3_5           |    <0.001 |
+|       rootFATSector_reg_r3_384_447_6_6           |    <0.001 |
+|       rootFATSector_reg_r3_384_447_7_7           |    <0.001 |
+|       rootFATSector_reg_r3_448_511_0_2           |    <0.001 |
+|       rootFATSector_reg_r3_448_511_3_5           |    <0.001 |
+|       rootFATSector_reg_r3_448_511_6_6           |    <0.001 |
+|       rootFATSector_reg_r3_448_511_7_7           |    <0.001 |
+|       rootFATSector_reg_r3_64_127_0_2            |    <0.001 |
+|       rootFATSector_reg_r3_64_127_3_5            |    <0.001 |
+|       rootFATSector_reg_r3_64_127_6_6            |    <0.001 |
+|       rootFATSector_reg_r3_64_127_7_7            |    <0.001 |
+|       rootFATSector_reg_r4_0_63_0_2              |    <0.001 |
+|       rootFATSector_reg_r4_0_63_3_5              |    <0.001 |
+|       rootFATSector_reg_r4_0_63_6_6              |    <0.001 |
+|       rootFATSector_reg_r4_0_63_7_7              |    <0.001 |
+|       rootFATSector_reg_r4_128_191_0_2           |    <0.001 |
+|       rootFATSector_reg_r4_128_191_3_5           |    <0.001 |
+|       rootFATSector_reg_r4_128_191_6_6           |    <0.001 |
+|       rootFATSector_reg_r4_128_191_7_7           |    <0.001 |
+|       rootFATSector_reg_r4_192_255_0_2           |    <0.001 |
+|       rootFATSector_reg_r4_192_255_3_5           |    <0.001 |
+|       rootFATSector_reg_r4_192_255_6_6           |    <0.001 |
+|       rootFATSector_reg_r4_192_255_7_7           |    <0.001 |
+|       rootFATSector_reg_r4_256_319_0_2           |    <0.001 |
+|       rootFATSector_reg_r4_256_319_3_5           |    <0.001 |
+|       rootFATSector_reg_r4_256_319_6_6           |    <0.001 |
+|       rootFATSector_reg_r4_256_319_7_7           |    <0.001 |
+|       rootFATSector_reg_r4_320_383_0_2           |    <0.001 |
+|       rootFATSector_reg_r4_320_383_3_5           |    <0.001 |
+|       rootFATSector_reg_r4_320_383_6_6           |    <0.001 |
+|       rootFATSector_reg_r4_320_383_7_7           |    <0.001 |
+|       rootFATSector_reg_r4_384_447_0_2           |    <0.001 |
+|       rootFATSector_reg_r4_384_447_3_5           |    <0.001 |
+|       rootFATSector_reg_r4_384_447_6_6           |    <0.001 |
+|       rootFATSector_reg_r4_384_447_7_7           |    <0.001 |
+|       rootFATSector_reg_r4_448_511_0_2           |    <0.001 |
+|       rootFATSector_reg_r4_448_511_3_5           |    <0.001 |
+|       rootFATSector_reg_r4_448_511_6_6           |    <0.001 |
+|       rootFATSector_reg_r4_448_511_7_7           |    <0.001 |
+|       rootFATSector_reg_r4_64_127_0_2            |    <0.001 |
+|       rootFATSector_reg_r4_64_127_3_5            |    <0.001 |
+|       rootFATSector_reg_r4_64_127_6_6            |    <0.001 |
+|       rootFATSector_reg_r4_64_127_7_7            |    <0.001 |
+|       root_cluster_inst                          |    <0.001 |
+|         U0                                       |    <0.001 |
+|           inst_blk_mem_gen                       |    <0.001 |
+|             gnbram.gnativebmg.native_blk_mem_gen |    <0.001 |
+|               valid.cstr                         |    <0.001 |
+|                 has_mux_b.B                      |    <0.001 |
+|                 ramloop[0].ram.r                 |    <0.001 |
+|                   prim_noinit.ram                |    <0.001 |
+|                 ramloop[1].ram.r                 |    <0.001 |
+|                   prim_noinit.ram                |    <0.001 |
+|                 ramloop[2].ram.r                 |    <0.001 |
+|                   prim_noinit.ram                |    <0.001 |
+|                 ramloop[3].ram.r                 |    <0.001 |
+|                   prim_noinit.ram                |    <0.001 |
+|                 ramloop[4].ram.r                 |    <0.001 |
+|                   prim_noinit.ram                |    <0.001 |
+|                 ramloop[5].ram.r                 |    <0.001 |
+|                   prim_noinit.ram                |    <0.001 |
+|                 ramloop[6].ram.r                 |    <0.001 |
+|                   prim_noinit.ram                |    <0.001 |
+|                 ramloop[7].ram.r                 |    <0.001 |
+|                   prim_noinit.ram                |    <0.001 |
+|     clkgen_inst                                  |     0.131 |
+|       inst                                       |     0.131 |
+|     dmem                                         |     0.002 |
+|       U0                                         |     0.002 |
+|         inst_blk_mem_gen                         |     0.002 |
+|           gnbram.gnativebmg.native_blk_mem_gen   |     0.002 |
+|             valid.cstr                           |     0.002 |
+|               ramloop[0].ram.r                   |     0.002 |
+|                 prim_noinit.ram                  |     0.002 |
+|     imem                                         |    <0.001 |
+|       U0                                         |    <0.001 |
+|         synth_options.dist_mem_inst              |    <0.001 |
+|           gen_dp_ram.dpram_inst                  |    <0.001 |
+|             ram_reg_0_127_0_0                    |    <0.001 |
+|             ram_reg_0_127_10_10                  |    <0.001 |
+|             ram_reg_0_127_11_11                  |    <0.001 |
+|             ram_reg_0_127_12_12                  |    <0.001 |
+|             ram_reg_0_127_13_13                  |    <0.001 |
+|             ram_reg_0_127_14_14                  |    <0.001 |
+|             ram_reg_0_127_15_15                  |    <0.001 |
+|             ram_reg_0_127_16_16                  |    <0.001 |
+|             ram_reg_0_127_17_17                  |    <0.001 |
+|             ram_reg_0_127_18_18                  |    <0.001 |
+|             ram_reg_0_127_19_19                  |    <0.001 |
+|             ram_reg_0_127_1_1                    |    <0.001 |
+|             ram_reg_0_127_20_20                  |    <0.001 |
+|             ram_reg_0_127_21_21                  |    <0.001 |
+|             ram_reg_0_127_22_22                  |    <0.001 |
+|             ram_reg_0_127_23_23                  |    <0.001 |
+|             ram_reg_0_127_24_24                  |    <0.001 |
+|             ram_reg_0_127_25_25                  |    <0.001 |
+|             ram_reg_0_127_26_26                  |    <0.001 |
+|             ram_reg_0_127_27_27                  |    <0.001 |
+|             ram_reg_0_127_28_28                  |    <0.001 |
+|             ram_reg_0_127_29_29                  |    <0.001 |
+|             ram_reg_0_127_2_2                    |    <0.001 |
+|             ram_reg_0_127_30_30                  |    <0.001 |
+|             ram_reg_0_127_31_31                  |    <0.001 |
+|             ram_reg_0_127_3_3                    |    <0.001 |
+|             ram_reg_0_127_4_4                    |    <0.001 |
+|             ram_reg_0_127_5_5                    |    <0.001 |
+|             ram_reg_0_127_6_6                    |    <0.001 |
+|             ram_reg_0_127_7_7                    |    <0.001 |
+|             ram_reg_0_127_8_8                    |    <0.001 |
+|             ram_reg_0_127_9_9                    |    <0.001 |
+|             ram_reg_128_255_0_0                  |    <0.001 |
+|             ram_reg_128_255_10_10                |    <0.001 |
+|             ram_reg_128_255_11_11                |    <0.001 |
+|             ram_reg_128_255_12_12                |    <0.001 |
+|             ram_reg_128_255_13_13                |    <0.001 |
+|             ram_reg_128_255_14_14                |    <0.001 |
+|             ram_reg_128_255_15_15                |    <0.001 |
+|             ram_reg_128_255_16_16                |    <0.001 |
+|             ram_reg_128_255_17_17                |    <0.001 |
+|             ram_reg_128_255_18_18                |    <0.001 |
+|             ram_reg_128_255_19_19                |    <0.001 |
+|             ram_reg_128_255_1_1                  |    <0.001 |
+|             ram_reg_128_255_20_20                |    <0.001 |
+|             ram_reg_128_255_21_21                |    <0.001 |
+|             ram_reg_128_255_22_22                |    <0.001 |
+|             ram_reg_128_255_23_23                |    <0.001 |
+|             ram_reg_128_255_24_24                |    <0.001 |
+|             ram_reg_128_255_25_25                |    <0.001 |
+|             ram_reg_128_255_26_26                |    <0.001 |
+|             ram_reg_128_255_27_27                |    <0.001 |
+|             ram_reg_128_255_28_28                |    <0.001 |
+|             ram_reg_128_255_29_29                |    <0.001 |
+|             ram_reg_128_255_2_2                  |    <0.001 |
+|             ram_reg_128_255_30_30                |    <0.001 |
+|             ram_reg_128_255_31_31                |    <0.001 |
+|             ram_reg_128_255_3_3                  |    <0.001 |
+|             ram_reg_128_255_4_4                  |    <0.001 |
+|             ram_reg_128_255_5_5                  |    <0.001 |
+|             ram_reg_128_255_6_6                  |    <0.001 |
+|             ram_reg_128_255_7_7                  |    <0.001 |
+|             ram_reg_128_255_8_8                  |    <0.001 |
+|             ram_reg_128_255_9_9                  |    <0.001 |
+|             ram_reg_256_383_0_0                  |    <0.001 |
+|             ram_reg_256_383_10_10                |    <0.001 |
+|             ram_reg_256_383_11_11                |    <0.001 |
+|             ram_reg_256_383_12_12                |    <0.001 |
+|             ram_reg_256_383_13_13                |    <0.001 |
+|             ram_reg_256_383_14_14                |    <0.001 |
+|             ram_reg_256_383_15_15                |    <0.001 |
+|             ram_reg_256_383_16_16                |    <0.001 |
+|             ram_reg_256_383_17_17                |    <0.001 |
+|             ram_reg_256_383_18_18                |    <0.001 |
+|             ram_reg_256_383_19_19                |    <0.001 |
+|             ram_reg_256_383_1_1                  |    <0.001 |
+|             ram_reg_256_383_20_20                |    <0.001 |
+|             ram_reg_256_383_21_21                |    <0.001 |
+|             ram_reg_256_383_22_22                |    <0.001 |
+|             ram_reg_256_383_23_23                |    <0.001 |
+|             ram_reg_256_383_24_24                |    <0.001 |
+|             ram_reg_256_383_25_25                |    <0.001 |
+|             ram_reg_256_383_26_26                |    <0.001 |
+|             ram_reg_256_383_27_27                |    <0.001 |
+|             ram_reg_256_383_28_28                |    <0.001 |
+|             ram_reg_256_383_29_29                |    <0.001 |
+|             ram_reg_256_383_2_2                  |    <0.001 |
+|             ram_reg_256_383_30_30                |    <0.001 |
+|             ram_reg_256_383_31_31                |    <0.001 |
+|             ram_reg_256_383_3_3                  |    <0.001 |
+|             ram_reg_256_383_4_4                  |    <0.001 |
+|             ram_reg_256_383_5_5                  |    <0.001 |
+|             ram_reg_256_383_6_6                  |    <0.001 |
+|             ram_reg_256_383_7_7                  |    <0.001 |
+|             ram_reg_256_383_8_8                  |    <0.001 |
+|             ram_reg_256_383_9_9                  |    <0.001 |
+|             ram_reg_384_511_0_0                  |    <0.001 |
+|             ram_reg_384_511_10_10                |    <0.001 |
+|             ram_reg_384_511_11_11                |    <0.001 |
+|             ram_reg_384_511_12_12                |    <0.001 |
+|             ram_reg_384_511_13_13                |    <0.001 |
+|             ram_reg_384_511_14_14                |    <0.001 |
+|             ram_reg_384_511_15_15                |    <0.001 |
+|             ram_reg_384_511_16_16                |    <0.001 |
+|             ram_reg_384_511_17_17                |    <0.001 |
+|             ram_reg_384_511_18_18                |    <0.001 |
+|             ram_reg_384_511_19_19                |    <0.001 |
+|             ram_reg_384_511_1_1                  |    <0.001 |
+|             ram_reg_384_511_20_20                |    <0.001 |
+|             ram_reg_384_511_21_21                |    <0.001 |
+|             ram_reg_384_511_22_22                |    <0.001 |
+|             ram_reg_384_511_23_23                |    <0.001 |
+|             ram_reg_384_511_24_24                |    <0.001 |
+|             ram_reg_384_511_25_25                |    <0.001 |
+|             ram_reg_384_511_26_26                |    <0.001 |
+|             ram_reg_384_511_27_27                |    <0.001 |
+|             ram_reg_384_511_28_28                |    <0.001 |
+|             ram_reg_384_511_29_29                |    <0.001 |
+|             ram_reg_384_511_2_2                  |    <0.001 |
+|             ram_reg_384_511_30_30                |    <0.001 |
+|             ram_reg_384_511_31_31                |    <0.001 |
+|             ram_reg_384_511_3_3                  |    <0.001 |
+|             ram_reg_384_511_4_4                  |    <0.001 |
+|             ram_reg_384_511_5_5                  |    <0.001 |
+|             ram_reg_384_511_6_6                  |    <0.001 |
+|             ram_reg_384_511_7_7                  |    <0.001 |
+|             ram_reg_384_511_8_8                  |    <0.001 |
+|             ram_reg_384_511_9_9                  |    <0.001 |
+|             ram_reg_512_639_0_0                  |    <0.001 |
+|             ram_reg_512_639_10_10                |    <0.001 |
+|             ram_reg_512_639_11_11                |    <0.001 |
+|             ram_reg_512_639_12_12                |    <0.001 |
+|             ram_reg_512_639_13_13                |    <0.001 |
+|             ram_reg_512_639_14_14                |    <0.001 |
+|             ram_reg_512_639_15_15                |    <0.001 |
+|             ram_reg_512_639_16_16                |    <0.001 |
+|             ram_reg_512_639_17_17                |    <0.001 |
+|             ram_reg_512_639_18_18                |    <0.001 |
+|             ram_reg_512_639_19_19                |    <0.001 |
+|             ram_reg_512_639_1_1                  |    <0.001 |
+|             ram_reg_512_639_20_20                |    <0.001 |
+|             ram_reg_512_639_21_21                |    <0.001 |
+|             ram_reg_512_639_22_22                |    <0.001 |
+|             ram_reg_512_639_23_23                |    <0.001 |
+|             ram_reg_512_639_24_24                |    <0.001 |
+|             ram_reg_512_639_25_25                |    <0.001 |
+|             ram_reg_512_639_26_26                |    <0.001 |
+|             ram_reg_512_639_27_27                |    <0.001 |
+|             ram_reg_512_639_28_28                |    <0.001 |
+|             ram_reg_512_639_29_29                |    <0.001 |
+|             ram_reg_512_639_2_2                  |    <0.001 |
+|             ram_reg_512_639_30_30                |    <0.001 |
+|             ram_reg_512_639_31_31                |    <0.001 |
+|             ram_reg_512_639_3_3                  |    <0.001 |
+|             ram_reg_512_639_4_4                  |    <0.001 |
+|             ram_reg_512_639_5_5                  |    <0.001 |
+|             ram_reg_512_639_6_6                  |    <0.001 |
+|             ram_reg_512_639_7_7                  |    <0.001 |
+|             ram_reg_512_639_8_8                  |    <0.001 |
+|             ram_reg_512_639_9_9                  |    <0.001 |
+|             ram_reg_640_767_0_0                  |    <0.001 |
+|             ram_reg_640_767_10_10                |    <0.001 |
+|             ram_reg_640_767_11_11                |    <0.001 |
+|             ram_reg_640_767_12_12                |    <0.001 |
+|             ram_reg_640_767_13_13                |    <0.001 |
+|             ram_reg_640_767_14_14                |    <0.001 |
+|             ram_reg_640_767_15_15                |    <0.001 |
+|             ram_reg_640_767_16_16                |    <0.001 |
+|             ram_reg_640_767_17_17                |    <0.001 |
+|             ram_reg_640_767_18_18                |    <0.001 |
+|             ram_reg_640_767_19_19                |    <0.001 |
+|             ram_reg_640_767_1_1                  |    <0.001 |
+|             ram_reg_640_767_20_20                |    <0.001 |
+|             ram_reg_640_767_21_21                |    <0.001 |
+|             ram_reg_640_767_22_22                |    <0.001 |
+|             ram_reg_640_767_23_23                |    <0.001 |
+|             ram_reg_640_767_24_24                |    <0.001 |
+|             ram_reg_640_767_25_25                |    <0.001 |
+|             ram_reg_640_767_26_26                |    <0.001 |
+|             ram_reg_640_767_27_27                |    <0.001 |
+|             ram_reg_640_767_28_28                |    <0.001 |
+|             ram_reg_640_767_29_29                |    <0.001 |
+|             ram_reg_640_767_2_2                  |    <0.001 |
+|             ram_reg_640_767_30_30                |    <0.001 |
+|             ram_reg_640_767_31_31                |    <0.001 |
+|             ram_reg_640_767_3_3                  |    <0.001 |
+|             ram_reg_640_767_4_4                  |    <0.001 |
+|             ram_reg_640_767_5_5                  |    <0.001 |
+|             ram_reg_640_767_6_6                  |    <0.001 |
+|             ram_reg_640_767_7_7                  |    <0.001 |
+|             ram_reg_640_767_8_8                  |    <0.001 |
+|             ram_reg_640_767_9_9                  |    <0.001 |
+|             ram_reg_768_895_0_0                  |    <0.001 |
+|             ram_reg_768_895_10_10                |    <0.001 |
+|             ram_reg_768_895_11_11                |    <0.001 |
+|             ram_reg_768_895_12_12                |    <0.001 |
+|             ram_reg_768_895_13_13                |    <0.001 |
+|             ram_reg_768_895_14_14                |    <0.001 |
+|             ram_reg_768_895_15_15                |    <0.001 |
+|             ram_reg_768_895_16_16                |    <0.001 |
+|             ram_reg_768_895_17_17                |    <0.001 |
+|             ram_reg_768_895_18_18                |    <0.001 |
+|             ram_reg_768_895_19_19                |    <0.001 |
+|             ram_reg_768_895_1_1                  |    <0.001 |
+|             ram_reg_768_895_20_20                |    <0.001 |
+|             ram_reg_768_895_21_21                |    <0.001 |
+|             ram_reg_768_895_22_22                |    <0.001 |
+|             ram_reg_768_895_23_23                |    <0.001 |
+|             ram_reg_768_895_24_24                |    <0.001 |
+|             ram_reg_768_895_25_25                |    <0.001 |
+|             ram_reg_768_895_26_26                |    <0.001 |
+|             ram_reg_768_895_27_27                |    <0.001 |
+|             ram_reg_768_895_28_28                |    <0.001 |
+|             ram_reg_768_895_29_29                |    <0.001 |
+|             ram_reg_768_895_2_2                  |    <0.001 |
+|             ram_reg_768_895_30_30                |    <0.001 |
+|             ram_reg_768_895_31_31                |    <0.001 |
+|             ram_reg_768_895_3_3                  |    <0.001 |
+|             ram_reg_768_895_4_4                  |    <0.001 |
+|             ram_reg_768_895_5_5                  |    <0.001 |
+|             ram_reg_768_895_6_6                  |    <0.001 |
+|             ram_reg_768_895_7_7                  |    <0.001 |
+|             ram_reg_768_895_8_8                  |    <0.001 |
+|             ram_reg_768_895_9_9                  |    <0.001 |
+|             ram_reg_896_1023_0_0                 |    <0.001 |
+|             ram_reg_896_1023_10_10               |    <0.001 |
+|             ram_reg_896_1023_11_11               |    <0.001 |
+|             ram_reg_896_1023_12_12               |    <0.001 |
+|             ram_reg_896_1023_13_13               |    <0.001 |
+|             ram_reg_896_1023_14_14               |    <0.001 |
+|             ram_reg_896_1023_15_15               |    <0.001 |
+|             ram_reg_896_1023_16_16               |    <0.001 |
+|             ram_reg_896_1023_17_17               |    <0.001 |
+|             ram_reg_896_1023_18_18               |    <0.001 |
+|             ram_reg_896_1023_19_19               |    <0.001 |
+|             ram_reg_896_1023_1_1                 |    <0.001 |
+|             ram_reg_896_1023_20_20               |    <0.001 |
+|             ram_reg_896_1023_21_21               |    <0.001 |
+|             ram_reg_896_1023_22_22               |    <0.001 |
+|             ram_reg_896_1023_23_23               |    <0.001 |
+|             ram_reg_896_1023_24_24               |    <0.001 |
+|             ram_reg_896_1023_25_25               |    <0.001 |
+|             ram_reg_896_1023_26_26               |    <0.001 |
+|             ram_reg_896_1023_27_27               |    <0.001 |
+|             ram_reg_896_1023_28_28               |    <0.001 |
+|             ram_reg_896_1023_29_29               |    <0.001 |
+|             ram_reg_896_1023_2_2                 |    <0.001 |
+|             ram_reg_896_1023_30_30               |    <0.001 |
+|             ram_reg_896_1023_31_31               |    <0.001 |
+|             ram_reg_896_1023_3_3                 |    <0.001 |
+|             ram_reg_896_1023_4_4                 |    <0.001 |
+|             ram_reg_896_1023_5_5                 |    <0.001 |
+|             ram_reg_896_1023_6_6                 |    <0.001 |
+|             ram_reg_896_1023_7_7                 |    <0.001 |
+|             ram_reg_896_1023_8_8                 |    <0.001 |
+|             ram_reg_896_1023_9_9                 |    <0.001 |
+|     kernel_inst                                  |    <0.001 |
+|     sccpu                                        |     0.011 |
+|       alu                                        |    <0.001 |
+|         clzblock                                 |    <0.001 |
+|         divider                                  |    <0.001 |
+|         multiplier                               |    <0.001 |
+|       cp0                                        |    <0.001 |
+|       cpu_ref                                    |     0.010 |
+|     sdcon_inst                                   |    <0.001 |
+|     spicon_inst                                  |    <0.001 |
+|     vga_inst                                     |    <0.001 |
+|   debugInfo_inst                                 |     0.002 |
+|   disp7seg                                       |    <0.001 |
+|     freqDivider_inst                             |    <0.001 |
++--------------------------------------------------+-----------+
+
+
