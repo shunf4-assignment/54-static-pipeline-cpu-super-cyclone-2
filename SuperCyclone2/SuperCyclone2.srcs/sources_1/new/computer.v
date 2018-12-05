@@ -65,7 +65,7 @@ module computer(
 );
 
     wire clk_vga;
-    //wire clk_cpu_orig;
+    wire clk_cpu_orig;
     //assign clk_cpu = SW[2] ? btnd_orig : clk_cpu_orig;
     assign clk_cpu = clk_cpu_orig;
 
@@ -232,10 +232,9 @@ module computer(
 
     // DMEM
     assign addr = dmemAEn ? dmemAAddr : 32'hFFFFFFFF;
-    wire clk_cpu_n = ~clk_cpu;
 
     DMEM dmem (
-        .clka(clk_cpu_n),    // input wire clka
+        .clka(clk_cpu),    // input wire clka
         .ena(dmemAEn),      // input wire ena
         .wea(dmemAWe),      // input wire [3 : 0] wea
         .addra(dmemARealAddr[`DMEM_ADDRSLICE]),
@@ -408,7 +407,7 @@ module computer(
     // 处理所有 syscall 指令的硬件核心. 操控图形缓存, 文件系统控制机器, 按键输入等.
 
     kernel kernel_inst(
-        .clk(clk_cpu_n),
+        .clk(~clk_cpu),
         .reset(reset),
         .funcCode(cpuSyscallFuncCode),
         .SW(SW),

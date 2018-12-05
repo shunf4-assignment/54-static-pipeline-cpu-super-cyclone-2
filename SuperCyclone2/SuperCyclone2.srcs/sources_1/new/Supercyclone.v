@@ -13,12 +13,12 @@ module Supercyclone(
     input [31:0] inst,  //imemOut
     output cpuRunning,
     output cpuPaused,
-    output reg [31:0] pc,   //imemRAddr
+    output [31:0] pc,   //imemRAddr
 
-    output reg dmemAEn,
+    output dmemAEn,
     output [3:0] dmemAWe,
-    output reg [31:0] dmemAAddr,
-    output reg [31:0] dmemAIn,
+    output [31:0] dmemAAddr,
+    output [31:0] dmemAIn,
     input [31:0] dmemAOut,
 
     output [31:0] imemWAddr,
@@ -28,7 +28,7 @@ module Supercyclone(
     input [4:0] debugRFAddr,
     output [31:0] debugRFData,
 
-    output reg [7:0] syscallFuncCode,
+    output [7:0] syscallFuncCode,
     input [4:0] rfRAddr1_kn,
     output [31:0] rfRData1,
 
@@ -37,28 +37,29 @@ module Supercyclone(
     assign imemWAddr = 32'h0;
     assign imemWData = 32'h0;
     assign imemWe = `DISABLE;
+
+    assign cpuPaused = knWorking;
     
     reg cpuStarted;
     assign cpuRunning = (ena & cpuStarted);
 
     `include "aluHeader.vh"
+    `include "IDCodes.vh"
 
     ////////////////////
     /// Parts Instantiating
     /// Register File
-    reg rfWe;
-    reg [4:0] rfRAddr1;
-    reg [4:0] rfRAddr2;
-    reg [4:0] rfWAddr;
-    reg [31:0] rfWData;
-
+    wire rfWe;
+    wire [4:0] rfRAddr1;
+    wire [4:0] rfRAddr2;
+    wire [4:0] rfWAddr;
+    wire [31:0] rfWData;
     wire [31:0] rfRData2;
 
     regfile cpu_ref(
         .clk(clk),
         .rst(reset),
         .we(rfWe),
-        .cpuPaused(cpuPaused),
         .raddr1(knWorking ? rfRAddr1_kn : rfRAddr1),
         .raddr2(rfRAddr2),
         .waddr(rfWAddr),
@@ -70,12 +71,11 @@ module Supercyclone(
     );
 
     /// ALU
-    reg [31:0] aluA;
-    reg [31:0] aluB;
-    reg [4:0] aluModeSel;
+    wire [31:0] aluA;
+    wire [31:0] aluB;
+    wire [4:0] aluModeSel;
     wire [31:0] aluR;
     wire [31:0] aluRX;
-    wire aluBusy;
     wire aluZero, aluCarry, aluNegative, aluOverflow;
     ALU alu(
         .clk(~clk),
@@ -87,26 +87,28 @@ module Supercyclone(
         .isRZero(aluZero),
         .isCarry(aluCarry),
         .isRNegative(aluNegative),
-        .isOverflow(aluOverflow),
-        .busy(aluBusy)
+        .isOverflow(aluOverflow)
     );
 
     ///////////////
     /// Extender
     ///
-    reg [31:0] extend16S_1In;
+    wire [31:0] extend16S_1In;
     wire [31:0] extend16S_1Out;
 
-    reg [31:0] extend16S_2In;
+    wire [31:0] extend16S_2In;
     wire [31:0] extend16S_2Out;
 
-    reg [31:0] extend16UIn;
+    wire [31:0] extend16UIn;
     wire [31:0] extend16UOut;
 
-    reg [31:0] extend8SIn;
+    wire [31:0] extend16U_forLBUIn;
+    wire [31:0] extend16U_forLBUOut;
+
+    wire [31:0] extend8SIn;
     wire [31:0] extend8SOut;
 
-    reg [31:0] extend8UIn;
+    wire [31:0] extend8UIn;
     wire [31:0] extend8UOut;
 
     extender #(16, `SIGNED) extend16S_1(
@@ -124,6 +126,11 @@ module Supercyclone(
         .out(extend16UOut)
     );
 
+    extender #(16, `UNSIGNED) extend16U_forLBU(
+        .in(extend16U_forLBUIn),
+        .out(extend16U_forLBUOut)
+    );
+
     extender #(8, `SIGNED) extend8S(
         .in(extend8SIn),
         .out(extend8SOut)
@@ -134,781 +141,535 @@ module Supercyclone(
         .out(extend8UOut)
     );
 
-    /////////////////////////////////////
-    /// Special structures
-    /// Instruction Decoder
-    wire [5:0] op = inst[31:26];
-    wire [5:0] func = inst[5:0];
-    wire [4:0] rs = inst[25:21];
-    wire [4:0] base = inst[25:21];
-    wire [4:0] rt = inst[20:16];
-    wire [4:0] rd = inst[15:11];
-    wire [4:0] shamt = inst[10:6];
-    wire [15:0] imm = inst[15:0];
-    wire [25:0] index = inst[25:0];
-
-    reg iMul, iAdd, iAddu, iSub, iSubu, iAnd, iOr, iXor, iNor, iSlt, iSltu, iSll, iSrl, iSra, iSllv, iSrlv, iSrav, iJr, iAddi, iAddiu, iAndi, iOri, iXori, iLw, iSw, iBeq, iBne, iSlti, iSltiu, iLui, iJ, iJal, iDiv, iDivu, iMult, iMultu, iBgez, iJalr, iLbu, iLhu, iLb, iLh, iSb, iSh, iBreak, iSyscall, iEret, iMfhi, iMflo, iMthi, iMtlo, iMfc0, iMtc0, iClz, iTeq;
-
-    always @ (*)
-    begin
-        if(op == 6'b000000 && func == 6'b100000) iAdd = 1; else iAdd = 0;
-        if(op == 6'b000000 && func == 6'b100001) iAddu = 1; else iAddu = 0;
-        if(op == 6'b000000 && func == 6'b100010) iSub = 1; else iSub = 0;
-        if(op == 6'b000000 && func == 6'b100011) iSubu = 1; else iSubu = 0;
-        if(op == 6'b000000 && func == 6'b100100) iAnd = 1; else iAnd = 0;
-        if(op == 6'b000000 && func == 6'b100101) iOr = 1; else iOr = 0;
-        if(op == 6'b000000 && func == 6'b100110) iXor = 1; else iXor = 0;
-        if(op == 6'b000000 && func == 6'b100111) iNor = 1; else iNor = 0;
-        if(op == 6'b000000 && func == 6'b101010) iSlt = 1; else iSlt = 0;
-        if(op == 6'b000000 && func == 6'b101011) iSltu = 1; else iSltu = 0;
-
-        if(op == 6'b000000 && func == 6'b000000) iSll = 1; else iSll = 0;
-        if(op == 6'b000000 && func == 6'b000010) iSrl = 1; else iSrl = 0;
-        if(op == 6'b000000 && func == 6'b000011) iSra = 1; else iSra = 0;
-
-        if(op == 6'b000000 && func == 6'b000100) iSllv = 1; else iSllv = 0;
-        if(op == 6'b000000 && func == 6'b000110) iSrlv = 1; else iSrlv = 0;
-        if(op == 6'b000000 && func == 6'b000111) iSrav = 1; else iSrav = 0;
-
-        if(op == 6'b000000 && func == 6'b001000 && rt == 5'h0 && rd == 5'h0) iJr = 1; else iJr = 0;
-
-        if(op == 6'b001000) iAddi = 1; else iAddi = 0;
-        if(op == 6'b001001) iAddiu = 1; else iAddiu = 0;
-        if(op == 6'b001100) iAndi = 1; else iAndi = 0;
-        if(op == 6'b001101) iOri = 1; else iOri = 0;
-        if(op == 6'b001110) iXori = 1; else iXori = 0;
-        if(op == 6'b100011) iLw = 1; else iLw = 0;
-        if(op == 6'b101011) iSw = 1; else iSw = 0;
-        if(op == 6'b000100) iBeq = 1; else iBeq = 0;
-        if(op == 6'b000101) iBne = 1; else iBne = 0;
-        if(op == 6'b001010) iSlti = 1; else iSlti = 0;
-        if(op == 6'b001011) iSltiu = 1; else iSltiu = 0;
-
-        if(op == 6'b001111) iLui = 1; else iLui = 0;
-
-        if(op == 6'b000010) iJ = 1; else iJ = 0;
-        if(op == 6'b000011) iJal = 1; else iJal = 0;
-        
-        if(op == 6'b000000 && func == 6'b011010 && rd == 5'h0) iDiv = 1; else iDiv = 0;
-        if(op == 6'b000000 && func == 6'b011011 && rd == 5'h0) iDivu = 1; else iDivu = 0;
-        if(op == 6'b011100 && func == 6'b000010) iMul = 1; else iMul = 0;
-        if(op == 6'b000000 && func == 6'b011000 && rd == 5'h0) iMult = 1; else iMult = 0;
-        if(op == 6'b000000 && func == 6'b011001 && rd == 5'h0) iMultu = 1; else iMultu = 0;
-
-        if(op == 6'b000001 && rt == 5'b00001) iBgez = 1; else iBgez = 0;
-
-        if(op == 6'b000000 && rt == 5'b00000 && shamt == 5'b00000 && func == 6'b001001) iJalr = 1; else iJalr = 0;
-
-        if(op == 6'b100000) iLb = 1; else iLb = 0;
-        if(op == 6'b100001) iLh = 1; else iLh = 0;
-        if(op == 6'b100100) iLbu = 1; else iLbu = 0;
-        if(op == 6'b100101) iLhu = 1; else iLhu = 0;
-
-        if(op == 6'b101000) iSb = 1; else iSb = 0;
-        if(op == 6'b101001) iSh = 1; else iSh = 0;
-
-        if(op == 6'b000000 && func == 6'b001101) iBreak = 1; else iBreak = 0;
-        if(inst == 32'b000000_00000_00000_00000_00000_001100) iSyscall = 1; else iSyscall = 0;
-        if(inst == 32'h42000018) iEret = 1; else iEret = 0;
-
-        if(op == 6'b000000 && rt == 5'h0 && func == 6'b010000) iMfhi = 1; else iMfhi = 0;
-        if(op == 6'b000000 && rt == 5'h0 && func == 6'b010010) iMflo = 1; else iMflo = 0;
-
-        if(op == 6'b000000 && rd == 5'h0 && rt == 5'h0 && func == 6'b010001) iMthi = 1; else iMthi = 0;
-        if(op == 6'b000000 && rd == 5'h0 && rt == 5'h0 && func == 6'b010011) iMtlo = 1; else iMtlo = 0;
-
-        if(op == 6'b010000 && rs == 5'b00000 && inst[10:3] == 8'h00) iMfc0 = 1; else iMfc0 = 0;
-        if(op == 6'b010000 && rs == 5'b00100 && inst[10:3] == 8'h00) iMtc0 = 1; else iMtc0 = 0;
-
-        if(op == 6'b011100 && func == 6'b100000) iClz = 1; else iClz = 0;
-        if(op == 6'b000000 && func == 6'b110100) iTeq = 1; else iTeq = 0;
-    end
-
-    /////////////////////
-    /// UADD - unsigned adder
-    ///
-    reg [31:0] uaddA;
-    reg [31:0] uaddB;
-    wire [31:0] uaddR = uaddA + uaddB;
-
     ///////////////////////
-    /// Next PC
-    wire [31:0] pcPlus4 = pc + 4;
-    reg [31:0] nextPC;
-    wire [31:0] nextPC_cp0;
-    wire [31:0] cp0ExecAddr;
+    /// HI, LO
 
-    ///////////////////////
-    /// PC, HI, LO
-    /// PC is defined at I/O ports.
     reg [31:0] hi;
     reg [31:0] lo;
-    reg [31:0] nextHi;
-    reg [31:0] nextLo;
 
     /////////////////////////
-    /// Main Blocks
+    /// CPU Starting
 
     reg [3:0] startCounter;
     localparam startNo = 10;
 
+    localparam exceptionEntry = 32'h00400004;
     localparam initInstAddr = 32'h00400000;
     localparam initDataAddr = 32'h10010000;
-
-    assign cpuPaused = aluBusy | knWorking;
 
     always @(posedge clk) begin
         if(reset == `ENABLE) begin
             startCounter <= 0;
-            pc <= initInstAddr;
-            hi <= 0;
-            lo <= 0;
-        end
-        else
-        begin
-            if(cpuStarted == `DISABLE) begin
-                if(startCounter < startNo - 1) begin
-                    startCounter <= startCounter + 1;
-                end
-                else if (startCounter >= startNo - 1) begin
-                    startCounter <= startNo - 1;
-                end
-            end else if(cpuRunning & ~cpuPaused) begin
-                pc <= nextPC;   //update PC at rising edge
-                lo <= nextLo;
-                hi <= nextHi;
-            end
-        end
-    end
-
-    always @(negedge clk) begin
-        if(reset == `ENABLE) begin
             cpuStarted <= `DISABLE;
         end
         else
-        begin
-            if(cpuStarted == `DISABLE && ena) begin
-                if(startCounter == startNo - 1) begin
-                    cpuStarted <= `ENABLE;
-                end
+        if(cpuStarted == `DISABLE && ena) begin
+            if(startCounter < startNo - 1) begin
+                startCounter <= startCounter + 1;
+            end
+            else if (startCounter >= startNo - 1) begin
+                startCounter <= startNo - 1;
+                cpuStarted <= `ENABLE;
             end
         end
     end
-    
-    
 
+
+    /////////////////
+    /// Other definitions
 
     `define SYSCALLCAUSE  5'b01000
     `define BREAKCAUSE  5'b01001
     `define TEQCAUSE 5'b01101
 
-    //////////////////////////////////
-    /// Instruction-specific datapath
-
-    reg [4:0] bytePos;
-    
-    reg [4:0] cp0Addr;
-    reg [31:0] cp0WData;
     wire [31:0] cp0RData;
-    reg cp0Exception;
+    wire cp0Exception;
     wire cp0Intr = `DISABLE;
     wire [31:0] cp0Status;
-    reg [31:0] cp0Cause;
-    reg trap;
-    reg [3:0] dmemAWe_orig;
-    assign dmemAWe = dmemAWe_orig & {4{cpuRunning & ~cpuPaused}};
+    wire [31:0] cp0Cause;
+    wire [31:0] cp0ExecAddr;
+
     localparam BigEndianCPU = 1'b0;
 
-    always @(*) begin
-        trap = 0;
+    ///////////////////////
+    /// Pipeline Logic
+    ///////////////////////
 
-        cp0Exception = `DISABLE;
-        cp0Addr = 32'h0;
-        cp0WData = 32'h0;
-        cp0Cause = 32'h0;
 
-        extend16S_1In = 32'hxxxxxxxx;
-        extend16S_2In = 32'hxxxxxxxx;
-        extend16UIn = 32'hxxxxxxxx;
-        extend8SIn = 32'hxxxxxxxx;
-        extend8UIn = 32'hxxxxxxxx;
+    wire bubbleIF = `DISABLE;
+    wire bubbleID;
+    /* 最下方会定义 bubbleID */
         
-
-        dmemAWe_orig = 4'h0;
-        dmemAEn = 1'b0;
-        dmemAIn = 32'haaaaaaaa;
-        dmemAAddr = initDataAddr;
-
-        rfRAddr1 = 32'hxxxxxxxx;
-        rfRAddr2 = 32'hxxxxxxxx;
-
-        bytePos = 5'bxxxxx;
-
-        aluA = 32'hxxxxxxxx;
-        aluB = 32'hxxxxxxxx;
-        aluModeSel = ALU_AND;
-
-        rfWe = 1'b0;
-        rfWAddr = 32'hxxxxxxxx;
-        rfWData = 32'hxxxxxxxx;
-
-        nextHi = hi;
-        nextLo = lo;
-        
-        uaddA = 32'hxxxxxxxx;
-        uaddB = 32'hxxxxxxxx;
-
-        nextPC = pcPlus4;
-        syscallFuncCode = 0;
-        
-        if(cpuRunning) begin
-            if(iAdd) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_SADD;
-
-                rfWe = aluOverflow ? 1'b0 : 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iAddu) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_UADD;
-
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iSub) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_SSUB;
-
-                rfWe = aluOverflow ? 1'b0 : 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iSubu) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_USUB;
-
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iAnd) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_AND;
-
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iOr) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_OR;
-
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iXor) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_XOR;
-
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iNor) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_NOR;
-
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iSlt) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_SLES;
-
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iSltu) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_ULES;
-
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iSll) begin
-                rfRAddr1 = rt;
-                rfRAddr2 = 0;
-
-                aluA = rfRData1;
-                aluB = shamt;
-                aluModeSel = ALU_SL;
-
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iSrl) begin
-                rfRAddr1 = rt;
-                rfRAddr2 = 0;
-                aluA = rfRData1;
-                aluB = shamt;
-                aluModeSel = ALU_SRL;
-
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iSra) begin
-                rfRAddr1 = rt;
-                rfRAddr2 = 0;
-                aluA = rfRData1;
-                aluB = shamt;
-                aluModeSel = ALU_SRA;
-
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iSllv) begin
-                rfRAddr1 = rt;
-                rfRAddr2 = rs;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_SL;
-
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iSrlv) begin
-                rfRAddr1 = rt;
-                rfRAddr2 = rs;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_SRL;
-
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iSrav) begin
-                rfRAddr1 = rt;
-                rfRAddr2 = rs;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_SRA;
-
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iJr) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = 0;
-                aluA = 0;
-                aluB = 0;
-                aluModeSel = ALU_AND;
-                nextPC = rfRData1;
-            end else if (iAddi) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = 0;
-                extend16S_1In = imm;
-                aluA = rfRData1;
-                aluB = extend16S_1Out;
-                aluModeSel = ALU_SADD;
-
-                rfWe = 1'b1;
-                rfWAddr = rt;
-                rfWData = aluR;
-            end else if (iAddiu) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = 0;
-                extend16S_1In = imm;
-                aluA = rfRData1;
-                aluB = extend16S_1Out;
-                aluModeSel = ALU_UADD;
-
-                rfWe = 1'b1;
-                rfWAddr = rt;
-                rfWData = aluR;
-            end else if (iAndi) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = 0;
-                extend16UIn = imm;
-
-                aluA = rfRData1;
-                aluB = extend16UOut;
-                aluModeSel = ALU_AND;
-
-                rfWe = 1'b1;
-                rfWAddr = rt;
-                rfWData = aluR;
-            end else if (iOri) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = 0;
-                extend16UIn = imm;
-
-                aluA = rfRData1;
-                aluB = extend16UOut;
-                aluModeSel = ALU_OR;
-
-                rfWe = 1'b1;
-                rfWAddr = rt;
-                rfWData = aluR;
-            end else if (iXori) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = 0;
-                extend16UIn = imm;
-
-                aluA = rfRData1;
-                aluB = extend16UOut;
-                aluModeSel = ALU_XOR;
-
-                rfWe = 1'b1;
-                rfWAddr = rt;
-                rfWData = aluR;
-            end else if (iLw) begin
-                rfRAddr1 = base;
-                rfRAddr2 = 0;
-                extend16S_1In = imm;
-                aluA = rfRData1;
-                aluB = extend16S_1Out;
-                aluModeSel = ALU_UADD;
-
-                dmemAEn = 1'b1;
-                dmemAAddr = aluR;
-
-                rfWe = 1'b1;
-                rfWAddr = rt;
-                rfWData = dmemAOut;
-            end else if (iSw) begin
-                rfRAddr1 = base;
-                rfRAddr2 = rt;
-                extend16S_1In = imm;
-                aluA = rfRData1;
-                aluB = extend16S_1Out;
-                aluModeSel = ALU_UADD;
-
-                dmemAEn = 1'b1;
-                dmemAWe_orig = 4'hf;
-                dmemAAddr = aluR;
-                dmemAIn = rfRData2;
-            end else if (iBeq || iBne) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                extend16S_1In = imm;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_EQU;
-
-                uaddA = pcPlus4;
-                uaddB = extend16S_1Out << 2;
-                if (iBeq)
-                    nextPC = aluR[0] ? uaddR : pcPlus4;
-                else if (iBne)
-                    nextPC = aluR[0] ? pcPlus4 : uaddR;
-            end else if (iSlti) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = 0;
-                extend16S_1In = imm;
-                aluA = rfRData1;
-                aluB = extend16S_1Out;
-                aluModeSel = ALU_SLES;
-
-                rfWe = 1'b1;
-                rfWAddr = rt;
-                rfWData = aluR;
-            end else if (iSltiu) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = 0;
-                extend16S_1In = imm;
-                aluA = rfRData1;
-                aluB = extend16S_1Out;
-                aluModeSel = ALU_ULES;
-
-                rfWe = 1'b1;
-                rfWAddr = rt;
-                rfWData = aluR;
-            end else if (iLui) begin
-                rfRAddr1 = 0;
-                rfRAddr2 = 0;
-
-                rfWe = 1'b1;
-                rfWAddr = rt;
-                rfWData = {imm, 16'h0};
-            end else if (iJ) begin
-                rfWe = 1'b0;   // Do nothing
-                nextPC = {pc[31:28], index, 2'b0};
-            end else if (iJal) begin
-                rfWe = 1'b1;
-                rfWAddr = 31;
-                rfWData = pcPlus4;
-                nextPC = {pc[31:28], index, 2'b0};
-            end else if (iDiv) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_SDIV;
-                
-                nextHi = aluRX;
-                nextLo = aluR;
-            end else if (iDivu) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_UDIV;
-                
-                nextHi = aluRX;
-                nextLo = aluR;
-            end else if (iMult) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_SMUL;
-                
-                nextHi = aluRX;
-                nextLo = aluR;
-            end else if (iMul) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_SMUL;
-                
-                rfWData = aluR;
-                rfWAddr = rd;
-                rfWe = 1;
-                
-            end else if (iMultu) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_UMUL;
-                
-                nextHi = aluRX;
-                nextLo = aluR;
-            end else if (iBgez) begin
-                rfRAddr1 = rs;
-                extend16S_1In = imm;
-                
-                uaddA = pcPlus4;
-                uaddB = extend16S_1Out << 2;
-                nextPC = rfRData1[31] ? pcPlus4 : uaddR;
-            end else if (iJalr) begin
-                rfRAddr1 = rs;
-                rfWe = 1'b1;
-                rfWAddr = rd;
-                rfWData = pcPlus4;
-                nextPC = rfRData1;
-            end else if (iLbu) begin
-                rfRAddr1 = base;
-                rfWAddr = rt;
-                rfWe = 1'b1;
-
-                extend16S_1In = imm;
-                
-                uaddA = extend16S_1Out;
-                uaddB = rfRData1;
-
-                dmemAAddr = uaddR;
-                dmemAEn = 1'b1;
-
-                bytePos = {3'b000, dmemAAddr[1:0] ^ {2{BigEndianCPU}}};
-
-                extend8UIn = dmemAOut[8 * bytePos +: 8];
-
-                rfWData = extend8UOut;
-            end else if (iLhu) begin
-                rfRAddr1 = base;
-                rfWAddr = rt;
-                rfWe = 1'b1;
-
-                extend16S_1In = imm;
-
-                uaddA = extend16S_1Out;
-                uaddB = rfRData1;
-
-                dmemAAddr = uaddR;
-                dmemAEn = 1'b1;
-
-                //bytePos = {3'b000, dmemAAddr[1:0] ^ {BigEndianCPU, 1'b0}};
-                bytePos = {3'b000, dmemAAddr[1] ^ BigEndianCPU, 1'b0};
-
-                extend16UIn = dmemAOut[8 * bytePos +: 16];
-
-                rfWData = extend16UOut;
-            end else if (iLb) begin
-                rfRAddr1 = base;
-                rfWAddr = rt;
-                rfWe = 1'b1;
-
-                extend16S_1In = imm;
-                
-                uaddA = extend16S_1Out;
-                uaddB = rfRData1;
-
-                dmemAAddr = uaddR;
-                dmemAEn = 1'b1;
-
-                bytePos = {3'b000, dmemAAddr[1:0] ^ {2{BigEndianCPU}}};
-
-                extend8SIn = dmemAOut[8 * bytePos +: 8];
-
-                rfWData = extend8SOut;
-            end else if (iLh) begin
-                rfRAddr1 = base;
-                rfWAddr = rt;
-                rfWe = 1'b1;
-
-                extend16S_1In = imm;
-                
-                uaddA = extend16S_1Out;
-                uaddB = rfRData1;
-
-                dmemAAddr = uaddR;
-                dmemAEn = 1'b1;
-
-                //bytePos = {3'b000, dmemAAddr[1:0] ^ {BigEndianCPU, 1'b0}};
-                bytePos = {3'b000, dmemAAddr[1] ^ BigEndianCPU, 1'b0};
-
-                extend16S_2In = dmemAOut[8 * bytePos +: 16];
-
-                rfWData = extend16S_2Out;
-            end else if (iSb) begin
-                rfRAddr1 = base;
-                rfRAddr2 = rt;
-
-                extend16S_1In = imm;
-                
-                uaddA = extend16S_1Out;
-                uaddB = rfRData1;
-
-                dmemAEn = 1'b1;
-                dmemAAddr = uaddR;
-
-                bytePos = {3'b000, dmemAAddr[1:0] ^ {2{BigEndianCPU}} };
-
-                dmemAWe_orig[0] = (bytePos[1:0] == 2'h0);
-                dmemAWe_orig[1] = (bytePos[1:0] == 2'h1);
-                dmemAWe_orig[2] = (bytePos[1:0] == 2'h2);
-                dmemAWe_orig[3] = (bytePos[1:0] == 2'h3);
-
-                aluA = rfRData2;
-                aluB = bytePos[1:0] << 3;
-                aluModeSel = ALU_SL;
-                
-                dmemAIn = aluR;
-            end else if (iSh) begin
-                rfRAddr1 = base;
-                rfRAddr2 = rt;
-
-                extend16S_1In = imm;
-                
-                uaddA = extend16S_1Out;
-                uaddB = rfRData1;
-
-                dmemAAddr = uaddR;
-
-                //bytePos = {3'b000, dmemAAddr[1:0] ^ {BigEndianCPU, 1'b0}};
-                bytePos = {3'b000, dmemAAddr[1] ^ BigEndianCPU, 1'b0};
-
-                dmemAEn = 1'b1;
-                dmemAWe_orig[0] = (bytePos[1] == 2'h0);
-                dmemAWe_orig[1] = (bytePos[1] == 2'h0);
-                dmemAWe_orig[2] = (bytePos[1] == 2'h1);
-                dmemAWe_orig[3] = (bytePos[1] == 2'h1);
-
-                aluA = rfRData2;
-                aluB = bytePos[1] ? 16 : 0;
-                aluModeSel = ALU_SL;
-                
-                dmemAIn = aluR;
-            end else if (iBreak) begin
-                cp0Exception = `ENABLE;
-                cp0Cause = {25'h0, `BREAKCAUSE, 2'h0};
-                nextPC = nextPC_cp0;
-            end else if (iSyscall) begin
-                rfRAddr2 = 2;
-                cp0Exception = `ENABLE;
-                cp0Cause = {25'h0, `SYSCALLCAUSE, 2'h0};
-                nextPC = nextPC_cp0;
-                syscallFuncCode = rfRData2[7:0];
-            end else if (iEret) begin
-                nextPC = cp0ExecAddr;
-            end else if (iMfhi) begin
-                rfWAddr = rd;
-                rfWe = 1'b1;
-                rfWData = hi;
-            end else if (iMflo) begin
-                rfWAddr = rd;
-                rfWe = 1'b1;
-                rfWData = lo;
-            end else if (iMthi) begin
-                rfRAddr1 = rs;
-                nextHi = rfRData1;
-            end else if (iMtlo) begin
-                rfRAddr1 = rs;
-                nextLo = rfRData1;
-            end else if (iMfc0) begin
-                cp0Addr = rd;
-                rfWe = `ENABLE;
-                rfWAddr = rt;
-                rfWData = cp0RData;
-            end else if (iMtc0) begin
-                rfRAddr1 = rt;
-                cp0Addr = rd;
-                cp0WData = rfRData1;
-            end else if (iClz) begin
-                rfRAddr1 = rs;
-                aluA = rfRData1;
-                aluB = 0;
-                aluModeSel = ALU_CLZ;
-
-                rfWe = 1;
-                rfWAddr = rd;
-                rfWData = aluR;
-            end else if (iTeq) begin
-                rfRAddr1 = rs;
-                rfRAddr2 = rt;
-
-                aluA = rfRData1;
-                aluB = rfRData2;
-                aluModeSel = ALU_EQU;
-
-                if(aluR[0]) begin
-                    cp0Cause = {25'h0, `TEQCAUSE, 2'h0};
-                    cp0Exception = `ENABLE;
+    wire bubbleEX = `DISABLE;
+    wire bubbleMEM = `DISABLE;
+    wire bubbleWB = `DISABLE;
+
+    wire allowWB = ~bubbleWB;
+    wire allowMEM = ~bubbleMEM & allowWB;
+    wire allowEX = ~bubbleEX & allowMEM & allowWB;
+    wire allowID = ~bubbleID & allowEX & allowMEM & allowWB;
+    wire allowIF = ~bubbleIF & allowID & allowEX & allowMEM & allowWB;
+    
+    /// Instruction Fetch
+    reg [31:0] preif_pc;
+
+    wire [31:0] if_pcPlus4_wire = preif_pc + 4;
+    wire [31:0] if_npc_wire;
+    wire if_invalidated_wire;
+
+    reg [31:0] ifid_inst;
+
+    assign pc = preif_pc;
+
+    reg [31:0] instCounter;
+    reg [31:0] bubbleCounter;
+    reg [31:0] slotCounter;
+
+    always @(posedge clk) begin
+        if (reset == `ENABLE) begin
+            ifid_inst <= 0;
+            instCounter <= 0;
+            bubbleCounter <= 0;
+            slotCounter <= 0;
+            preif_pc <= initInstAddr;
+        end
+        else
+        if (cpuRunning) begin
+            instCounter <= instCounter + 1;
+            if (allowIF) begin
+                if (if_invalidated_wire) begin
+                    ifid_inst <= NullInstruction;
+                    slotCounter <= slotCounter + 1;
+                end else begin
+                    ifid_inst <= inst;
                 end
-                trap = aluR[0];
-                nextPC = nextPC_cp0;
+                preif_pc <= if_npc_wire;
+            end else if (bubbleIF) begin
+                ifid_inst <= NullInstruction;
+            end
+            
+            if (bubbleEX || bubbleID || bubbleIF || bubbleMEM || bubbleWB)
+                bubbleCounter <= bubbleCounter + 1;
+        end
+    end
+
+    // Instruction Decoding
+
+    wire [54:0] id_itype_wire;   // 指令类型
+    wire [31:0] id_npc_cp0Val_wire;
+    wire [31:0] id_iretpc_cp0Val_wire = cp0ExecAddr;
+    wire [4:0] id_rfWAddr_wire;
+    wire [15:0] id_imm_wire;
+    wire [4:0] id_aluModeSel_wire;
+    wire [4:0] id_rs_wire;
+    wire [4:0] id_rt_wire;
+    wire [4:0] id_rd_wire;
+    wire [31:0] id_pcPlus4Val_wire = if_pcPlus4_wire;
+    wire [31:0] id_rsVal_wire;   // 带 val 的都是 CPU 发往 ID, 否则相反
+    wire [31:0] id_rtVal_wire;
+    wire [31:0] id_extender16SVal_wire;
+    wire [31:0] id_extender16UVal_wire;
+    wire [31:0] id_aluA_wire;
+    wire [31:0] id_aluB_wire;
+    wire [31:0] id_npc_wire;
+    assign if_npc_wire = id_npc_wire;
+    wire id_rfWe_wire;
+    wire id_dmemEn_wire;
+    wire [3:0] id_dmemWe_wire;
+    wire id_condJump_wire;
+    wire id_rs_willRead_wire;
+    wire id_rt_willRead_wire;
+    wire [7:0] id_syscallFuncode_wire;
+
+    assign if_invalidated_wire = id_condJump_wire;
+
+    assign cp0Exception = id_itype_wire[IBreak] || id_itype_wire[ISyscall] || (id_itype_wire[ITeq] && id_condJump_wire);
+    assign cp0Cause = 
+        id_itype_wire[IBreak] ? 
+            {25'h0, `BREAKCAUSE, 2'h0}
+        : id_itype_wire[ISyscall] ?
+            {25'h0, `SYSCALLCAUSE, 2'h0}
+        : (id_itype_wire[ITeq] && id_condJump_wire) ?
+            {25'h0, `TEQCAUSE, 2'h0}
+        : 0
+    ;
+    assign syscallFuncCode = allowID & id_syscallFuncode_wire;
+    assign rfRAddr1 = id_rs_wire;
+    assign rfRAddr2 = id_rt_wire;
+    /* assign id_rsVal_wire = // 相关作用路径, 赋值在底部 */
+    
+    /* assign id_rtVal_wire = // 相关作用路径, 赋值在底部 */
+        
+    assign extend16S_1In = id_imm_wire;
+    assign extend16UIn = id_imm_wire;
+    assign id_extender16SVal_wire = extend16S_1Out;
+    assign id_extender16UVal_wire = extend16UOut;
+
+    reg [54:0] idex_itype;
+    reg [4:0] idex_rfWAddr;
+    reg [15:0] idex_imm;
+    reg [4:0] idex_aluModeSel;
+    reg [4:0] idex_rs;
+    reg [4:0] idex_rt;
+    reg [4:0] idex_rd;
+    reg [31:0] idex_aluA;
+    reg [31:0] idex_aluB;
+    //reg [31:0] idex_npc;
+    reg idex_rfWe;
+    reg idex_dmemEn;
+    reg [3:0] idex_dmemWe;
+    reg [31:0] idex_rsVal;
+    reg [31:0] idex_rtVal;
+    reg idex_condJump;
+
+
+    ID id(
+        .inst(ifid_inst),
+        .pcPlus4(id_pcPlus4Val_wire),
+        .npc_cp0(id_npc_cp0Val_wire),
+        .iretpc_cp0(id_iretpc_cp0Val_wire),
+        .rsVal(id_rsVal_wire),
+        .rtVal(id_rtVal_wire),
+        .extender16SVal(id_extender16SVal_wire),
+        .extender16UVal(id_extender16UVal_wire),
+        
+        .iType(id_itype_wire),
+        .imm(id_imm_wire),
+        .aluModeSel(id_aluModeSel_wire),
+        .rfWAddr(id_rfWAddr_wire),
+        .rs(id_rs_wire),
+        .rs_willRead(id_rs_willRead_wire),
+        .rt(id_rt_wire),
+        .rt_willRead(id_rt_willRead_wire),
+        .rd(id_rd_wire),
+        .aluA(id_aluA_wire),
+        .aluB(id_aluB_wire),
+        .npc(id_npc_wire),
+        .condJump(id_condJump_wire),
+        .rfWe(id_rfWe_wire),
+        .dmemEn(id_dmemEn_wire),
+        .dmemWe(id_dmemWe_wire),
+        
+        .syscallFuncCode(id_syscallFuncode_wire)
+    );
+        
+
+    always @(posedge clk) begin
+        if (reset == `ENABLE) begin
+            idex_itype <= 0;
+            idex_rfWAddr <= 0;
+            idex_imm <= 0;
+            idex_aluModeSel <= 0;
+            idex_rs <= 0;
+            idex_rt <= 0;
+            idex_rd <= 0;
+            idex_aluA <= 0;
+            idex_aluB <= 0;
+            //idex_npc <= 32'hFFFFFFFF;
+            idex_rfWe <= `DISABLE;
+            idex_dmemEn <= `DISABLE;
+            idex_dmemWe <= 0;
+            idex_rsVal <= 0;
+            idex_rtVal <= 0;
+            idex_condJump <= `DISABLE;
+        end
+        else
+        if (cpuRunning) begin
+
+            if (allowID) begin
+                idex_itype <= id_itype_wire;
+                idex_rfWAddr <= id_rfWAddr_wire;
+                idex_imm <= id_imm_wire;
+                idex_aluModeSel <= id_aluModeSel_wire;
+                idex_rs <= id_rs_wire;
+                idex_rt <= id_rt_wire;
+                idex_rd <= id_rd_wire;
+                idex_aluA <= id_aluA_wire;
+                idex_aluB <= id_aluB_wire;
+                //idex_npc <= id_npc_wire
+                idex_rfWe <= id_rfWe_wire;
+                idex_dmemEn <= id_dmemEn_wire;
+                idex_dmemWe <= id_dmemWe_wire;
+                idex_rsVal <= id_rsVal_wire;
+                idex_rtVal <= id_rtVal_wire;
+                idex_condJump <= id_condJump_wire;
+            end else if (bubbleID) begin
+                idex_itype <= 0;
+                idex_rfWAddr <= 0;
+                idex_imm <= 0;
+                idex_aluModeSel <= 0;
+                idex_rs <= 0;
+                idex_rt <= 0;
+                idex_rd <= 0;
+                idex_aluA <= 0;
+                idex_aluB <= 0;
+                //idex_npc <= id_npc_wire
+                idex_rfWe <= `DISABLE;
+                idex_dmemEn <= `DISABLE;
+                idex_dmemWe <= 0;
+                idex_rsVal <= 0;
+                idex_rtVal <= 0;
+                idex_condJump <= `DISABLE;
             end
         end
     end
+
+    // EXecution
+
+    wire [54:0] ex_itype_wire = idex_itype;
+    wire [4:0] ex_rfWAddr_wire = idex_rfWAddr;
+    wire [15:0] ex_imm_wire = idex_imm;
+    wire [4:0] ex_aluModeSel_wire = idex_aluModeSel;
+    wire [4:0] ex_rs_wire = idex_rs;
+    wire [4:0] ex_rt_wire = idex_rt;
+    wire [4:0] ex_rd_wire = idex_rd;
+    wire [31:0] ex_aluA_wire = idex_aluA;
+    wire [31:0] ex_aluB_wire = idex_aluB;
+    wire ex_rfWe_wire_orig = idex_rfWe;
+    wire ex_dmemEn_wire = idex_dmemEn;
+    wire [3:0] ex_dmemWe_wire_orig = idex_dmemWe;
+    wire [31:0] ex_rsVal_wire = idex_rsVal;
+    wire [31:0] ex_rtVal_wire = idex_rtVal;
+    wire ex_condJump_wire = idex_condJump;
+
+    assign aluA = ex_aluA_wire;
+    assign aluB = ex_aluB_wire;
+    assign aluModeSel = ex_aluModeSel_wire;
+
+    reg [31:0] ex_result_calculated;
+    reg [31:0] ex_extra_result_calculated;
+    reg ex_rfWe_calculated;
+    reg [3:0] ex_dmemWe_calculated;
+    reg [31:0] ex_dmemIn_calculated;
+    reg [7:0] ex_bytePos_calculated;
+
+    wire [31:0] ex_result_wire = ex_result_calculated;
+    wire [31:0] ex_extra_result_wire = ex_extra_result_calculated;
+    wire ex_rfWe_wire = ex_rfWe_calculated;
+    wire [3:0] ex_dmemWe_wire = ex_dmemWe_calculated;
+    wire [31:0] ex_dmemIn_wire = ex_dmemIn_calculated;
+    wire [7:0] ex_bytePos_wire = ex_bytePos_calculated;
+
+    reg [54:0] exmem_itype;
+    reg [4:0] exmem_rfWAddr;
+    reg exmem_rfWe;
+    reg exmem_condJump;
+    reg [31:0] exmem_result;
+    reg [7:0] exmem_bytePos;
+    
+
+`define E(instName) ex_itype_wire[instName]
+
+    always @* begin
+        ex_extra_result_calculated = 0;
+        ex_bytePos_calculated = 0;
+        ex_result_calculated = 0;
+        ex_dmemWe_calculated = ex_dmemWe_wire_orig;
+        ex_dmemIn_calculated = ex_rtVal_wire;
+
+        ex_rfWe_calculated = ex_rfWe_wire_orig;
+        if (`E(IAdd) || `E(IAddu) || `E(ISub) || `E(ISubu) || `E(IAnd) || `E(IOr) || `E(IXor) || `E(INor) || `E(ISlt) || `E(ISltu) || `E(ISll) || `E(ISrl) || `E(ISra) || `E(ISllv) || `E(ISrlv) || `E(ISrav) || /*ijr*/ `E(IAddi) || `E(IAddiu) || `E(IAndi) || `E(IOri) || `E(IXori) ||/*ilw,isw,ibeq,ibne*/ `E(ISlti) || `E(ISltiu) || `E(ILui) ||/*ij*/ `E(IJal) || `E(IDiv) || `E(IDivu) || `E(IMul) || `E(IMult) || `E(IMultu) ||/*ibgez*/ `E(IJalr) ||/*ilb,ilh,ilbu,ilhu,isb,ish,ibreak,isyscall,ieret*/ `E(IMfhi) || `E(IMflo) || `E(IMthi) || `E(IMtlo) || `E(IMfc0) || `E(IMtc0) || `E(IClz) /*iteq*/) begin
+            if (`E(ILui))
+                ex_result_calculated = {ex_imm_wire, 16'h0};
+            else if (`E(IMfhi))
+                ex_result_calculated = hi;
+            else if (`E(IMflo))
+                ex_result_calculated = lo;
+            else if (`E(IMtc0))
+                ex_result_calculated = cp0RData;
+            else begin
+                ex_result_calculated = aluR;
+                ex_extra_result_calculated = aluRX;
+            end
+
+            if (`E(IAdd) || `E(ISub)) begin
+                ex_rfWe_calculated = ex_rfWe_wire_orig & ~aluOverflow;
+            end
+        end
+
+        if (`E(ILw) || `E(ISw) || `E(ILb) || `E(ILh) || `E(ILbu) || `E(ILhu) || `E(ISb) || `E(ISh)) begin
+            ex_result_calculated = aluR;
+        end
+
+        if (`E(ISw)) begin
+            ex_dmemWe_calculated = ex_dmemWe_wire_orig & 4'hf;
+            ex_dmemIn_calculated = ex_rtVal_wire;
+        end
+
+        if (`E(ISb)) begin
+            ex_bytePos_calculated = { 6'h0, aluR[1:0] ^ {2{BigEndianCPU}} };
+            ex_dmemIn_calculated = ex_rtVal_wire << (ex_bytePos_calculated << 3);
+            ex_dmemWe_calculated = ex_dmemWe_wire_orig & ((4'h1) << ex_bytePos_calculated);
+        end
+
+        if (`E(ISh)) begin
+            ex_bytePos_calculated = {6'b000, aluR[1] ^ BigEndianCPU, 1'b0};
+            ex_dmemIn_calculated = ex_rtVal_wire << (ex_bytePos_calculated[1] ? 16 : 0);
+            ex_dmemWe_calculated = ex_dmemWe_wire_orig & ((4'b0011) << ex_bytePos_calculated);
+        end
+    end
+
+    assign dmemAAddr = ex_result_calculated;
+    assign dmemAEn = ex_dmemEn_wire;
+    assign dmemAWe = ex_dmemWe_wire;
+    assign dmemAIn = ex_dmemIn_wire;
+
+    always @(posedge clk) begin
+        if (reset == `ENABLE) begin
+            exmem_itype <= 0;
+            exmem_rfWAddr <= 0;
+            exmem_rfWe <= `DISABLE;
+            exmem_condJump <= `DISABLE;
+            exmem_result <= 0;
+            exmem_bytePos <= 0;
+
+            hi <= 0;
+            lo <= 0;
+        end
+        else
+        if (cpuRunning) begin
+
+            if (allowEX) begin
+                exmem_itype <= ex_itype_wire;
+                exmem_rfWAddr <= ex_rfWAddr_wire;
+                exmem_rfWe <= ex_rfWe_wire;
+                exmem_condJump <= ex_condJump_wire;
+                exmem_result <= ex_result_wire;
+                exmem_bytePos <= ex_bytePos_wire;
+
+                if (`E(IDiv) || `E(IDivu) || `E(IMult) || `E(IMultu)) begin
+                    hi <= ex_extra_result_wire;
+                    lo <= ex_result_wire;
+                end else if (`E(IMthi)) begin
+                    hi <= ex_result_wire;
+                end else if (`E(IMtlo)) begin
+                    lo <= ex_result_wire;
+                end
+
+                // 另外, cp0 的寄存器也会更新 (MTC0)
+
+            end else if (bubbleEX) begin
+                exmem_itype <= 0;
+                exmem_rfWAddr <= 0;
+                exmem_rfWe <= `DISABLE;
+                exmem_condJump <= `DISABLE;
+                exmem_result <= 0;
+                exmem_bytePos <= 0;
+            end
+
+        end
+    end
+
+    // MEMory manipulation
+
+    wire [54:0] mem_itype_wire = exmem_itype;
+    wire [4:0] mem_rfWAddr_wire = exmem_rfWAddr;
+    wire mem_rfWe_wire = exmem_rfWe;
+    wire mem_condJump_wire = exmem_condJump;
+    wire [31:0] mem_result_wire_orig = exmem_result;    // 可能是地址, 也可能是数据
+    wire [7:0] mem_bytePos_wire = exmem_bytePos;
+
+    reg [31:0] mem_result_calculated;
+
+    wire [31:0] mem_dmemOut_wire = dmemAOut;
+    wire [31:0] mem_result_wire = mem_result_calculated;
+
+    reg [54:0] memwb_itype;
+    reg [4:0] memwb_rfWAddr;
+    reg memwb_rfWe;
+    reg [31:0] memwb_result;
+
+`define M(instName) mem_itype_wire[instName]
+
+    assign extend8SIn = mem_dmemOut_wire[8 * mem_bytePos_wire +: 8];
+    assign extend16S_2In = mem_dmemOut_wire[8 * mem_bytePos_wire +: 16];
+    assign extend8UIn = mem_dmemOut_wire[8 * mem_bytePos_wire +: 8];
+    assign extend16U_forLBUIn = mem_dmemOut_wire[8 * mem_bytePos_wire +: 16];
+
+    always @* begin
+        mem_result_calculated = mem_result_wire_orig;
+        if (`M(ILw)) begin
+            mem_result_calculated = mem_dmemOut_wire;
+        end
+        if ( `M(ILb)) begin
+            mem_result_calculated = extend8SOut;
+        end
+        if (`M(ILh)) begin
+            mem_result_calculated = extend16S_2Out;
+        end
+        if ( `M(ILbu) ) begin
+            mem_result_calculated = extend8UOut;
+        end
+        if ( `M(ILhu)) begin
+            mem_result_calculated = extend16U_forLBUOut;
+        end
+    end
+
+    always @(posedge clk) begin
+        if (reset == `ENABLE) begin
+            memwb_itype <= 0;
+            memwb_rfWAddr <= 0;
+            memwb_rfWe <= `DISABLE;
+            memwb_result <= 0;
+        end
+        else
+        if (cpuRunning) begin
+
+            if (allowMEM) begin
+                memwb_itype <= mem_itype_wire;
+                memwb_rfWAddr <= mem_rfWAddr_wire;
+                memwb_rfWe <= mem_rfWe_wire;
+                memwb_result <= mem_result_wire;
+            end else if (bubbleMEM) begin
+                memwb_itype <= 0;
+                memwb_rfWAddr <= 0;
+                memwb_rfWe <= `DISABLE;
+                memwb_result <= 0;
+            end
+
+        end
+    end
+
+    // Writing Back
+
+    wire [54:0] wb_itype_wire = memwb_itype;
+    wire [4:0] wb_rfWAddr_wire = memwb_rfWAddr;
+    wire wb_rfWe_wire = memwb_rfWe;
+    wire [31:0] wb_result_wire = memwb_result;
+
+    assign rfWAddr = wb_rfWAddr_wire;
+    assign rfWData = wb_result_wire;
+    assign rfWe = wb_rfWe_wire;
+
+    // Some values assignment
+
+    assign bubbleID = (ex_itype_wire[ISw] | ex_itype_wire[ILbu] | ex_itype_wire[ILhu] | ex_itype_wire[ILb] | ex_itype_wire[ILh]) && (
+        (id_rs_willRead_wire && id_rs_wire == ex_rfWAddr_wire && id_rs_wire != 0 && ex_rfWe_wire)
+     || (id_rt_willRead_wire && id_rt_wire == ex_rfWAddr_wire && id_rt_wire != 0 && ex_rfWe_wire)
+    );
+
+    assign id_rsVal_wire = // 相关作用路径
+        (ex_rfWAddr_wire == id_rs_wire && id_rs_wire != 0 && ex_rfWe_wire) ?
+            (ex_itype_wire[ISw] | ex_itype_wire[ILbu] | ex_itype_wire[ILhu] | ex_itype_wire[ILb] | ex_itype_wire[ILh]) ? // 此时无法拿到内存中的数据
+                32'h8A8A8A8A
+            :
+                ex_result_wire
+        : (mem_rfWAddr_wire == id_rs_wire && id_rs_wire != 0 && mem_rfWe_wire) ?
+            mem_result_wire
+        : (wb_rfWAddr_wire == id_rs_wire && id_rs_wire != 0 && wb_rfWe_wire) ?
+            wb_result_wire
+        : rfRData1;
+    assign id_rtVal_wire = // 相关作用路径
+        (ex_rfWAddr_wire == id_rt_wire && id_rt_wire != 0 && ex_rfWe_wire) ?
+            (ex_itype_wire[ISw] | ex_itype_wire[ILbu] | ex_itype_wire[ILhu] | ex_itype_wire[ILb] | ex_itype_wire[ILh]) ? // 此时无法拿到内存中的数据
+                32'h8A8A8A8A
+            :
+                ex_result_wire
+        : (mem_rfWAddr_wire == id_rt_wire && id_rt_wire != 0 && mem_rfWe_wire) ?
+            mem_result_wire
+        : (wb_rfWAddr_wire == id_rt_wire && id_rt_wire != 0 && wb_rfWe_wire) ?
+            wb_result_wire
+        : rfRData2;
 
     ///////////////
     /// CP0
@@ -917,18 +678,18 @@ module Supercyclone(
         .clk(clk),
         .rst(reset),
         .cpuPaused(cpuPaused),
-        .mfc0(iMfc0),
-        .mtc0(iMtc0),
+        .mfc0(`E(IMfc0)),
+        .mtc0(`E(IMtc0)),
         .pc(pc),
-        .nextPC(nextPC_cp0),
-        .addr(cp0Addr),
-        .data(cp0WData),
+        .nextPC(id_npc_cp0Val_wire),
+        .addr(ex_rd_wire),
+        .data(ex_result_calculated),
         .exception(cp0Exception),
-        .eret(iEret),
+        .eret(id_itype_wire[IEret]),
         .cause(cp0Cause),
         .intr(cp0Intr),
 
-        .PC0_out(cp0RData),
+        .CP0_out(cp0RData),
         .status(cp0Status),
         .epc_out(cp0ExecAddr)
 

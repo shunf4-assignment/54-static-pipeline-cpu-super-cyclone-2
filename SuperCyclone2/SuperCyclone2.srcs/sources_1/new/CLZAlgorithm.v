@@ -7,21 +7,8 @@ module CLZAlgorithm(
 );
     reg lastEna;
     reg [7:0] counter;
-    localparam COUNTER_CYCLE = 25;
 
-    always @(posedge clk) begin
-        // negedge of main clk
-        lastEna <= ena;
-        if (ena != lastEna)
-        begin
-            counter <= 0;
-        end
-        else if (ena) begin
-            counter <= counter + 1;
-        end
-    end
-
-    assign busy = ena & (counter != COUNTER_CYCLE);
+    assign busy = 0;
 
     generate
         genvar i;

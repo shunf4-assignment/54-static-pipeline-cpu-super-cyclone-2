@@ -11,8 +11,8 @@ module ALU(
     output isRZero,
     output reg isCarry,
     output isRNegative,
-    output reg isOverflow,
-    output busy
+    output reg isOverflow
+    //output busy
 
 );
     `include "aluHeader.vh"

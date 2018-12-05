@@ -14,7 +14,7 @@ module cp0(
     input eret,
     input [31:0] cause,
     input intr,
-    output reg [31:0] PC0_out,
+    output reg [31:0] CP0_out,
     output [31:0] status,
     output reg [31:0] epc_out
 );
@@ -37,23 +37,24 @@ module cp0(
     always @(*) begin
         if(mfc0) begin
             if(addr == 12)
-                PC0_out = status_reg;
+                CP0_out = status_reg;
             else if (addr == 13)
-                PC0_out = cause_reg;
+                CP0_out = cause_reg;
             else if (addr == 14)
-                PC0_out = epc_reg;
+                CP0_out = epc_reg;
             else
-                PC0_out = 32'hacacacac;
+                CP0_out = 32'hacacacac;
         end
-        else PC0_out = 32'hbcbcbcbc;
+        else CP0_out = 32'hbcbcbcbc;
     end
 
     always @(*) begin
-        if(eret) begin
-            epc_out = epc_reg;
-        end else begin
-            epc_out = 32'h87878787;
-        end
+        // if(eret) begin
+        //     epc_out = epc_reg;
+        // end else begin
+        //     epc_out = 32'h87878787;
+        // end
+        epc_out = epc_reg;
     end
 
     wire interruptEna = status_reg[0];
@@ -92,7 +93,7 @@ module cp0(
             status_reg <= 32'h0000000f;
             epc_reg <= 32'h00400000;
         end else if(cpuPaused) begin
-            ;
+            status_reg <= status_reg;
         end else if(eret) begin
             status_reg <= status_reg >> 5;
         end else if (exception && interruptEna) begin

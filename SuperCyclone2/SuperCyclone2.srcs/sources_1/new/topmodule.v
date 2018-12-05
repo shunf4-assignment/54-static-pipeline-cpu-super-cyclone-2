@@ -91,7 +91,7 @@ module topmodule(
         btnl_deJitter <= {btnl_deJitter[1:0], BTNL};
         btnd_deJitter <= {btnd_deJitter[1:0], BTND};
         btnr_deJitter <= {btnr_deJitter[1:0], BTNR};
-        cpuresetn_deJitter <= {cpuresetn_deJitter[1:0], CPU_RESETN};
+        cpuresetn_deJitter <= {cpuresetn_deJitter[1:0], ~CPU_RESETN};
     end
 
     assign btnu_deJittered = (btnu_deJitter == 3'b111);
